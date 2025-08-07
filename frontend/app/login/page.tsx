@@ -356,7 +356,7 @@ function LoginForm() {
   const [attempts, setAttempts] = useState(0);
   const router = useRouter();
 
-  const CORRECT_PASSWORD = "SalahDev2025!";
+  const CORRECT_PASSWORD = "SalahDev";
   const MAX_ATTEMPTS = 3;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -369,11 +369,8 @@ function LoginForm() {
 
     if (password === CORRECT_PASSWORD) {
       // Store session
-      localStorage.setItem("adminSession", "true");
-      localStorage.setItem(
-        "sessionExpiry",
-        (Date.now() + 24 * 60 * 60 * 1000).toString()
-      );
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("authTime", Date.now().toString());
       router.push("/admin");
     } else {
       const newAttempts = attempts + 1;
