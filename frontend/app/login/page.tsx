@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ClientOnly from "@/components/ClientOnly";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -356,7 +357,6 @@ function LoginForm() {
   const [attempts, setAttempts] = useState(0);
   const router = useRouter();
 
-  const CORRECT_PASSWORD = "SalahDev";
   const MAX_ATTEMPTS = 3;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -364,15 +364,18 @@ function LoginForm() {
     setIsLoading(true);
     setError("");
 
-    // Simulate loading
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    if (password === CORRECT_PASSWORD) {
-      // Store session
+    try {
+      const { authAPI } = await import('@/lib/api');
+      const response = await authAPI.login(password);
+      
+      // Store authentication data
+      localStorage.setItem("authToken", response.token);
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("authTime", Date.now().toString());
+      localStorage.setItem("adminData", JSON.stringify(response.admin));
+      
       router.push("/admin");
-    } else {
+    } catch (error: any) {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
 
@@ -380,7 +383,7 @@ function LoginForm() {
         router.push("/oops");
       } else {
         setError(
-          `Incorrect password. ${
+          error.message || `Incorrect password. ${
             MAX_ATTEMPTS - newAttempts
           } attempts remaining.`
         );
@@ -480,17 +483,25 @@ function LoginForm() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
-        className="mt-8 text-center"
+        className="mt-8 text-center space-y-2"
       >
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Attempts: {attempts}/{MAX_ATTEMPTS}
         </p>
-        <Link
-          href="/"
-          className="text-sm text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors mt-2 inline-block"
-        >
-          ← Back to Portfolio
-        </Link>
+        <div className="flex flex-col space-y-2">
+          <Link
+            href="/reset-password"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 transition-colors"
+          >
+            Forgot Password?
+          </Link>
+          <Link
+            href="/"
+            className="text-sm text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors"
+          >
+            ← Back to Portfolio
+          </Link>
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -504,7 +515,9 @@ export default function LoginPage() {
     <div className="bg-white dark:bg-black text-black dark:text-white min-h-screen">
       <AmbientBackground />
       <Navigation />
-      <ThemeToggle />
+      <ClientOnly>
+        <ThemeToggle />
+      </ClientOnly>
 
       {/* Hero Section */}
       <motion.section

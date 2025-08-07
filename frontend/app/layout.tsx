@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/contexts/AuthContext'
+import ClientOnly from '@/components/ClientOnly'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,14 +22,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange={false}
-        >
-          {children}
-        </ThemeProvider>
+        <ClientOnly fallback={<LoadingSpinner />}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange={false}
+          >
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </ThemeProvider>
+        </ClientOnly>
       </body>
     </html>
   )

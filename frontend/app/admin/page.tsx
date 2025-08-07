@@ -8,13 +8,42 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import { ArrowRight, Sun, Moon, Plus, Edit, Trash2, Eye, Save, Upload, Image, Code, Gamepad2, Palette, BarChart3, Users, Calendar, Settings, LogOut, Search, Filter, Download, Star, Heart, ExternalLink, Github } from 'lucide-react';
+import {
+  ArrowRight,
+  Sun,
+  Moon,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Save,
+  Upload,
+  Image,
+  Code,
+  Gamepad2,
+  Palette,
+  BarChart3,
+  Users,
+  Calendar,
+  Settings,
+  LogOut,
+  Search,
+  Filter,
+  Download,
+  Star,
+  Heart,
+  ExternalLink,
+  Github,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/contexts/AuthContext";
+import ClientOnly from "@/components/ClientOnly";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -150,12 +179,18 @@ function ThemeToggle() {
 }
 
 // Sidebar Component
-function Sidebar({ activeTab, setActiveTab }: { activeTab: string; setActiveTab: (tab: string) => void }) {
+function Sidebar({
+  activeTab,
+  setActiveTab,
+}: {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}) {
+  const { logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("authTime");
+    logout();
     router.push("/");
   };
 
@@ -237,9 +272,21 @@ function OverviewTab() {
   ];
 
   const recentActivity = [
-    { action: "Added new project", item: "E-Commerce Platform", time: "2 hours ago" },
-    { action: "Updated art piece", item: "Digital Landscape", time: "5 hours ago" },
-    { action: "Modified project", item: "Task Management App", time: "1 day ago" },
+    {
+      action: "Added new project",
+      item: "E-Commerce Platform",
+      time: "2 hours ago",
+    },
+    {
+      action: "Updated art piece",
+      item: "Digital Landscape",
+      time: "5 hours ago",
+    },
+    {
+      action: "Modified project",
+      item: "Task Management App",
+      time: "1 day ago",
+    },
     { action: "Added new artwork", item: "Neon Dreams", time: "2 days ago" },
   ];
 
@@ -257,18 +304,28 @@ function OverviewTab() {
             className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                stat.color === 'blue' ? 'bg-blue-100 dark:bg-blue-900' :
-                stat.color === 'purple' ? 'bg-purple-100 dark:bg-purple-900' :
-                stat.color === 'green' ? 'bg-green-100 dark:bg-green-900' :
-                'bg-yellow-100 dark:bg-yellow-900'
-              }`}>
-                <stat.icon className={`w-6 h-6 ${
-                  stat.color === 'blue' ? 'text-blue-500' :
-                  stat.color === 'purple' ? 'text-purple-500' :
-                  stat.color === 'green' ? 'text-green-500' :
-                  'text-yellow-500'
-                }`} />
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  stat.color === "blue"
+                    ? "bg-blue-100 dark:bg-blue-900"
+                    : stat.color === "purple"
+                    ? "bg-purple-100 dark:bg-purple-900"
+                    : stat.color === "green"
+                    ? "bg-green-100 dark:bg-green-900"
+                    : "bg-yellow-100 dark:bg-yellow-900"
+                }`}
+              >
+                <stat.icon
+                  className={`w-6 h-6 ${
+                    stat.color === "blue"
+                      ? "text-blue-500"
+                      : stat.color === "purple"
+                      ? "text-purple-500"
+                      : stat.color === "green"
+                      ? "text-green-500"
+                      : "text-yellow-500"
+                  }`}
+                />
               </div>
             </div>
             <div className="text-3xl font-bold text-black dark:text-white mb-1">
@@ -288,7 +345,9 @@ function OverviewTab() {
         transition={{ delay: 0.5 }}
         className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
       >
-        <h3 className="text-xl font-bold text-black dark:text-white mb-6">Recent Activity</h3>
+        <h3 className="text-xl font-bold text-black dark:text-white mb-6">
+          Recent Activity
+        </h3>
         <div className="space-y-4">
           {recentActivity.map((activity, index) => (
             <motion.div
@@ -301,7 +360,8 @@ function OverviewTab() {
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <div className="flex-1">
                 <div className="text-black dark:text-white font-medium">
-                  {activity.action}: <span className="text-blue-500">{activity.item}</span>
+                  {activity.action}:{" "}
+                  <span className="text-blue-500">{activity.item}</span>
                 </div>
                 <div className="text-slate-500 dark:text-slate-400 text-sm">
                   {activity.time}
@@ -373,7 +433,9 @@ function ProjectsTab() {
               </label>
               <Input
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 placeholder="Enter project title"
                 required
                 className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
@@ -387,7 +449,9 @@ function ProjectsTab() {
                 </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-black dark:text-white"
                 >
                   <option value="web">Web Development</option>
@@ -402,7 +466,9 @@ function ProjectsTab() {
                 </label>
                 <select
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-black dark:text-white"
                 >
                   <option value="planning">Planning</option>
@@ -417,11 +483,20 @@ function ProjectsTab() {
                 Technologies (comma-separated)
               </label>
               <Input
-                value={Array.isArray(formData.technologies) ? formData.technologies.join(", ") : ""}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  technologies: e.target.value.split(",").map(tech => tech.trim()).filter(tech => tech)
-                })}
+                value={
+                  Array.isArray(formData.technologies)
+                    ? formData.technologies.join(", ")
+                    : ""
+                }
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    technologies: e.target.value
+                      .split(",")
+                      .map((tech) => tech.trim())
+                      .filter((tech) => tech),
+                  })
+                }
                 placeholder="React, Node.js, MongoDB"
                 className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
               />
@@ -433,7 +508,9 @@ function ProjectsTab() {
               </label>
               <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 placeholder="Project description..."
                 rows={4}
                 className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
@@ -465,7 +542,13 @@ function ProjectsTab() {
 
   const handleSaveProject = (projectData: any) => {
     if (editingProject) {
-      setProjects(projects.map(p => p.id === editingProject.id ? { ...projectData, id: editingProject.id } : p));
+      setProjects(
+        projects.map((p) =>
+          p.id === editingProject.id
+            ? { ...projectData, id: editingProject.id }
+            : p
+        )
+      );
       setEditingProject(null);
     } else {
       setProjects([...projects, { ...projectData, id: Date.now() }]);
@@ -474,14 +557,16 @@ function ProjectsTab() {
   };
 
   const handleDeleteProject = (id: number) => {
-    setProjects(projects.filter(p => p.id !== id));
+    setProjects(projects.filter((p) => p.id !== id));
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-black dark:text-white">Projects Management</h2>
+        <h2 className="text-2xl font-bold text-black dark:text-white">
+          Projects Management
+        </h2>
         <Button
           onClick={() => setShowAddForm(true)}
           className="bg-blue-500 hover:bg-blue-600 text-white"
@@ -507,18 +592,26 @@ function ProjectsTab() {
                   {project.title}
                 </h3>
                 <div className="flex items-center space-x-4 mb-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    project.category === 'web' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' :
-                    project.category === 'game' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
-                    'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      project.category === "web"
+                        ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                        : project.category === "game"
+                        ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                        : "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
+                    }`}
+                  >
                     {project.category}
                   </span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    project.status === 'completed' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
-                    project.status === 'in-progress' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
-                    'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      project.status === "completed"
+                        ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                        : project.status === "in-progress"
+                        ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200"
+                        : "bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                    }`}
+                  >
                     {project.status}
                   </span>
                 </div>
@@ -641,7 +734,9 @@ function ArtTab() {
               </label>
               <Input
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 placeholder="Enter artwork title"
                 required
                 className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
@@ -655,7 +750,9 @@ function ArtTab() {
                 </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-black dark:text-white"
                 >
                   <option value="Digital Art">Digital Art</option>
@@ -672,7 +769,9 @@ function ArtTab() {
                 </label>
                 <Input
                   value={formData.year}
-                  onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, year: e.target.value })
+                  }
                   placeholder="2025"
                   className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                 />
@@ -685,7 +784,9 @@ function ArtTab() {
               </label>
               <Input
                 value={formData.medium}
-                onChange={(e) => setFormData({ ...formData, medium: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, medium: e.target.value })
+                }
                 placeholder="Paint Studio on PC"
                 className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
               />
@@ -696,10 +797,15 @@ function ArtTab() {
                 type="checkbox"
                 id="featured"
                 checked={formData.featured}
-                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, featured: e.target.checked })
+                }
                 className="rounded"
               />
-              <label htmlFor="featured" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label
+                htmlFor="featured"
+                className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
                 Featured Artwork
               </label>
             </div>
@@ -729,7 +835,11 @@ function ArtTab() {
 
   const handleSaveArt = (artData: any) => {
     if (editingArt) {
-      setArtPieces(artPieces.map(a => a.id === editingArt.id ? { ...artData, id: editingArt.id } : a));
+      setArtPieces(
+        artPieces.map((a) =>
+          a.id === editingArt.id ? { ...artData, id: editingArt.id } : a
+        )
+      );
       setEditingArt(null);
     } else {
       setArtPieces([...artPieces, { ...artData, id: Date.now() }]);
@@ -738,14 +848,16 @@ function ArtTab() {
   };
 
   const handleDeleteArt = (id: number) => {
-    setArtPieces(artPieces.filter(a => a.id !== id));
+    setArtPieces(artPieces.filter((a) => a.id !== id));
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-black dark:text-white">Art Gallery Management</h2>
+        <h2 className="text-2xl font-bold text-black dark:text-white">
+          Art Gallery Management
+        </h2>
         <Button
           onClick={() => setShowAddForm(true)}
           className="bg-purple-500 hover:bg-purple-600 text-white"
@@ -857,7 +969,8 @@ function SettingsTab() {
     },
     seoSettings: {
       metaTitle: "Salah Eddine Boussettah - Developer & Artist",
-      metaDescription: "Portfolio of Salah Eddine Boussettah - Software Developer, Game Developer, and Digital Artist",
+      metaDescription:
+        "Portfolio of Salah Eddine Boussettah - Software Developer, Game Developer, and Digital Artist",
       keywords: "developer, game development, digital art, web development",
     },
   });
@@ -869,7 +982,9 @@ function SettingsTab() {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-black dark:text-white">Settings</h2>
+      <h2 className="text-2xl font-bold text-black dark:text-white">
+        Settings
+      </h2>
 
       {/* General Settings */}
       <motion.div
@@ -877,7 +992,9 @@ function SettingsTab() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
       >
-        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">General Settings</h3>
+        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">
+          General Settings
+        </h3>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -885,7 +1002,9 @@ function SettingsTab() {
             </label>
             <Input
               value={settings.siteName}
-              onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+              onChange={(e) =>
+                setSettings({ ...settings, siteName: e.target.value })
+              }
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -895,7 +1014,9 @@ function SettingsTab() {
             </label>
             <Textarea
               value={settings.siteDescription}
-              onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
+              onChange={(e) =>
+                setSettings({ ...settings, siteDescription: e.target.value })
+              }
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -906,7 +1027,9 @@ function SettingsTab() {
             <Input
               type="email"
               value={settings.email}
-              onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+              onChange={(e) =>
+                setSettings({ ...settings, email: e.target.value })
+              }
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -920,7 +1043,9 @@ function SettingsTab() {
         transition={{ delay: 0.1 }}
         className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
       >
-        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">Social Links</h3>
+        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">
+          Social Links
+        </h3>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -928,10 +1053,15 @@ function SettingsTab() {
             </label>
             <Input
               value={settings.socialLinks.github}
-              onChange={(e) => setSettings({
-                ...settings,
-                socialLinks: { ...settings.socialLinks, github: e.target.value }
-              })}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  socialLinks: {
+                    ...settings.socialLinks,
+                    github: e.target.value,
+                  },
+                })
+              }
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -941,10 +1071,15 @@ function SettingsTab() {
             </label>
             <Input
               value={settings.socialLinks.linkedin}
-              onChange={(e) => setSettings({
-                ...settings,
-                socialLinks: { ...settings.socialLinks, linkedin: e.target.value }
-              })}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  socialLinks: {
+                    ...settings.socialLinks,
+                    linkedin: e.target.value,
+                  },
+                })
+              }
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -954,10 +1089,15 @@ function SettingsTab() {
             </label>
             <Input
               value={settings.socialLinks.twitter}
-              onChange={(e) => setSettings({
-                ...settings,
-                socialLinks: { ...settings.socialLinks, twitter: e.target.value }
-              })}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  socialLinks: {
+                    ...settings.socialLinks,
+                    twitter: e.target.value,
+                  },
+                })
+              }
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -971,7 +1111,9 @@ function SettingsTab() {
         transition={{ delay: 0.2 }}
         className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
       >
-        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">SEO Settings</h3>
+        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">
+          SEO Settings
+        </h3>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -979,10 +1121,15 @@ function SettingsTab() {
             </label>
             <Input
               value={settings.seoSettings.metaTitle}
-              onChange={(e) => setSettings({
-                ...settings,
-                seoSettings: { ...settings.seoSettings, metaTitle: e.target.value }
-              })}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  seoSettings: {
+                    ...settings.seoSettings,
+                    metaTitle: e.target.value,
+                  },
+                })
+              }
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -992,10 +1139,15 @@ function SettingsTab() {
             </label>
             <Textarea
               value={settings.seoSettings.metaDescription}
-              onChange={(e) => setSettings({
-                ...settings,
-                seoSettings: { ...settings.seoSettings, metaDescription: e.target.value }
-              })}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  seoSettings: {
+                    ...settings.seoSettings,
+                    metaDescription: e.target.value,
+                  },
+                })
+              }
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -1005,10 +1157,15 @@ function SettingsTab() {
             </label>
             <Input
               value={settings.seoSettings.keywords}
-              onChange={(e) => setSettings({
-                ...settings,
-                seoSettings: { ...settings.seoSettings, keywords: e.target.value }
-              })}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  seoSettings: {
+                    ...settings.seoSettings,
+                    keywords: e.target.value,
+                  },
+                })
+              }
               placeholder="Separate keywords with commas"
               className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
             />
@@ -1038,26 +1195,6 @@ function SettingsTab() {
 // Main Dashboard Component
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const router = useRouter();
-
-  // Check authentication on mount
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
-    const authTime = localStorage.getItem("authTime");
-    
-    if (!isAuthenticated || !authTime) {
-      router.push("/login");
-      return;
-    }
-
-    // Check if session is expired (24 hours)
-    const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    if (Date.now() - parseInt(authTime) > sessionDuration) {
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("authTime");
-      router.push("/login");
-    }
-  }, [router]);
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -1075,48 +1212,52 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <ThemeToggle />
+    <ProtectedRoute>
+      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <ClientOnly>
+          <ThemeToggle />
+        </ClientOnly>
 
-      {/* Main Content */}
-      <div className="ml-64 p-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          {/* Header */}
-          <div className="mb-8">
-            <motion.h1
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-3xl font-bold text-black dark:text-white mb-2"
-            >
-              Admin Dashboard
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-slate-600 dark:text-slate-400"
-            >
-              Manage your portfolio content and settings
-            </motion.p>
-          </div>
-
-          {/* Tab Content */}
+        {/* Main Content */}
+        <div className="ml-64 p-8">
           <motion.div
-            key={activeTab}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.8 }}
           >
-            {renderActiveTab()}
+            {/* Header */}
+            <div className="mb-8">
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-3xl font-bold text-black dark:text-white mb-2"
+              >
+                Admin Dashboard
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-slate-600 dark:text-slate-400"
+              >
+                Manage your portfolio content and settings
+              </motion.p>
+            </div>
+
+            {/* Tab Content */}
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              {renderActiveTab()}
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
