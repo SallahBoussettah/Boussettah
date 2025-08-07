@@ -8,7 +8,18 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import { ArrowRight, Sun, Moon, Lock, Eye, EyeOff, AlertCircle, CheckCircle, User, Shield } from 'lucide-react';
+import {
+  ArrowRight,
+  Sun,
+  Moon,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  CheckCircle,
+  User,
+  Shield,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "next-themes";
@@ -29,7 +40,7 @@ function ThemeToggle() {
 
   const handleThemeToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (isAnimating) return;
-    
+
     const rect = event.currentTarget.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -354,21 +365,28 @@ function LoginForm() {
     setError("");
 
     // Simulate loading
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     if (password === CORRECT_PASSWORD) {
       // Store session
       localStorage.setItem("adminSession", "true");
-      localStorage.setItem("sessionExpiry", (Date.now() + 24 * 60 * 60 * 1000).toString());
+      localStorage.setItem(
+        "sessionExpiry",
+        (Date.now() + 24 * 60 * 60 * 1000).toString()
+      );
       router.push("/admin");
     } else {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
-      
+
       if (newAttempts >= MAX_ATTEMPTS) {
         router.push("/oops");
       } else {
-        setError(`Incorrect password. ${MAX_ATTEMPTS - newAttempts} attempts remaining.`);
+        setError(
+          `Incorrect password. ${
+            MAX_ATTEMPTS - newAttempts
+          } attempts remaining.`
+        );
       }
     }
 
@@ -398,7 +416,11 @@ function LoginForm() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
           >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
           </button>
         </div>
 
@@ -466,7 +488,10 @@ function LoginForm() {
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Attempts: {attempts}/{MAX_ATTEMPTS}
         </p>
-        <Link href="/" className="text-sm text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors mt-2 inline-block">
+        <Link
+          href="/"
+          className="text-sm text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors mt-2 inline-block"
+        >
           ← Back to Portfolio
         </Link>
       </motion.div>
@@ -495,10 +520,13 @@ export default function LoginPage() {
           <AnimatedText className="text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6">
             Developer Access
           </AnimatedText>
-          
-          <AnimatedText delay={0.2} className="text-5xl md:text-6xl font-bold mb-8 leading-tight">
+
+          <AnimatedText
+            delay={0.2}
+            className="text-5xl md:text-6xl font-bold mb-8 leading-tight"
+          >
             <motion.span
-              animate={{ 
+              animate={{
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -509,9 +537,13 @@ export default function LoginPage() {
             <br />
             <span className="text-black dark:text-white">Dashboard</span>
           </AnimatedText>
-          
-          <AnimatedText delay={0.4} className="text-xl text-slate-600 dark:text-slate-300 mb-12 max-w-xl mx-auto leading-relaxed">
-            Enter your developer credentials to access the admin dashboard and manage your portfolio content.
+
+          <AnimatedText
+            delay={0.4}
+            className="text-xl text-slate-600 dark:text-slate-300 mb-12 max-w-xl mx-auto leading-relaxed"
+          >
+            Enter your developer credentials to access the admin dashboard and
+            manage your portfolio content.
           </AnimatedText>
 
           <LoginForm />

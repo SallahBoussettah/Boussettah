@@ -38,31 +38,15 @@ const encouragingMessages = [
 ];
 
 export default function OopsPage() {
-  const [currentMessage, setCurrentMessage] = useState(0);
-  const [currentEncouragement, setCurrentEncouragement] = useState(0);
+  // Pick random messages once when component loads
+  const [currentMessage] = useState(() => Math.floor(Math.random() * funMessages.length));
+  const [currentEncouragement] = useState(() => Math.floor(Math.random() * encouragingMessages.length));
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     setShowConfetti(true);
     const timer = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const messageTimer = setInterval(() => {
-      setCurrentMessage((prev) => (prev + 1) % funMessages.length);
-    }, 3000);
-
-    const encouragementTimer = setInterval(() => {
-      setCurrentEncouragement(
-        (prev) => (prev + 1) % encouragingMessages.length
-      );
-    }, 4000);
-
-    return () => {
-      clearInterval(messageTimer);
-      clearInterval(encouragementTimer);
-    };
   }, []);
 
   return (
@@ -190,31 +174,23 @@ export default function OopsPage() {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="mb-8"
         >
-          <AnimatePresence mode="wait">
-            <motion.h1
-              key={currentMessage}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="text-4xl md:text-5xl font-bold mb-4 text-black dark:text-white"
-            >
-              {funMessages[currentMessage]}
-            </motion.h1>
-          </AnimatePresence>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="text-4xl md:text-5xl font-bold mb-4 text-black dark:text-white"
+          >
+            {funMessages[currentMessage]}
+          </motion.h1>
 
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={currentEncouragement}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.5 }}
-              className="text-xl text-slate-600 dark:text-slate-300"
-            >
-              {encouragingMessages[currentEncouragement]}
-            </motion.p>
-          </AnimatePresence>
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="text-xl text-slate-600 dark:text-slate-300"
+          >
+            {encouragingMessages[currentEncouragement]}
+          </motion.p>
         </motion.div>
 
         {/* Fun Stats */}
