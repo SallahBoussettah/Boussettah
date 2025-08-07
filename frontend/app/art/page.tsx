@@ -315,6 +315,24 @@ function Navigation() {
                 </motion.div>
               </Link>
             ))}
+            
+            {/* Developer Button */}
+            <Link href="/login">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 + navItems.length * 0.1, duration: 0.6 }}
+                className="ml-4"
+              >
+                <motion.button
+                  className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 text-sm"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  For Developer
+                </motion.button>
+              </motion.div>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -375,6 +393,24 @@ function Navigation() {
                   </motion.div>
                 </Link>
               ))}
+           
+              {/* Developer Button - Mobile */}
+              <Link href="/login">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: navItems.length * 0.1, duration: 0.3 }}
+                  className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <motion.button
+                    className="w-full bg-black dark:bg-white text-white dark:text-black px-4 py-3 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 text-center"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    For Developer
+                  </motion.button>
+                </motion.div>
+              </Link>
             </motion.div>
           )}
         </AnimatePresence>
