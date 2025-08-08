@@ -538,10 +538,12 @@ function ArtCard({
   artwork,
   index,
   viewMode,
+  onClick,
 }: {
   artwork: any;
   index: number;
   viewMode: string;
+  onClick: () => void;
 }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(artwork.likes);
@@ -563,7 +565,7 @@ function ArtCard({
       }`}
     >
       {/* Art Image */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden cursor-pointer" onClick={onClick}>
         <div className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative overflow-hidden rounded-lg">
           {/* Display actual image if available */}
           {artwork.imageUrl ? (
@@ -1010,12 +1012,137 @@ function ArtGallery() {
                     artwork={artwork}
                     index={index}
                     viewMode={viewMode}
+                    onClick={() => setSelectedArt(index)}
                   />
                 </motion.div>
               ))}
             </AnimatePresence>
           </motion.div>
         )}
+
+        {/* Art Modal */}
+        <AnimatePresence>
+          {selectedArt !== null && displayedArtworks[selectedArt] && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setSelectedArt(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative max-w-7xl max-h-[90vh] bg-white dark:bg-black rounded-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close button */}
+                <button
+                  onClick={() => setSelectedArt(null)}
+                  className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 dark:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/40 dark:hover:bg-white/40 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+
+                {/* Art content */}
+                <div className="flex flex-col lg:flex-row max-h-[90vh]">
+                  {/* Image section */}
+                  <div className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-8">
+                    {displayedArtworks[selectedArt]?.imageUrl ? (
+                      <img
+                        src={displayedArtworks[selectedArt].imageUrl}
+                        alt={displayedArtworks[selectedArt].title}
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    ) : (
+                      <div className="text-center text-slate-500 dark:text-slate-400">
+                        <div className="text-6xl mb-4">🎨</div>
+                        <p>No image available</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info section */}
+                  <div className="lg:w-96 p-8 overflow-y-auto">
+                    <motion.h2
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="text-3xl font-bold mb-4 text-black dark:text-white"
+                    >
+                      {displayedArtworks[selectedArt]?.title || "Artwork"}
+                    </motion.h2>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="space-y-4"
+                    >
+                      <div>
+                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Medium</h3>
+                        <p className="text-slate-700 dark:text-slate-300">{displayedArtworks[selectedArt]?.medium || "Digital Art"}</p>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Category</h3>
+                        <p className="text-slate-700 dark:text-slate-300">{displayedArtworks[selectedArt]?.category}</p>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Year</h3>
+                        <p className="text-slate-700 dark:text-slate-300">{displayedArtworks[selectedArt]?.year || "2025"}</p>
+                      </div>
+
+                      {displayedArtworks[selectedArt]?.description && (
+                        <div>
+                          <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Description</h3>
+                          <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{displayedArtworks[selectedArt].description}</p>
+                        </div>
+                      )}
+
+                      {displayedArtworks[selectedArt]?.dimensions && (
+                        <div>
+                          <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Dimensions</h3>
+                          <p className="text-slate-700 dark:text-slate-300">{displayedArtworks[selectedArt].dimensions}</p>
+                        </div>
+                      )}
+
+                      {displayedArtworks[selectedArt]?.tags && displayedArtworks[selectedArt].tags.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Tags</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {displayedArtworks[selectedArt].tags.map((tag: string, tagIndex: number) => (
+                              <span
+                                key={tagIndex}
+                                className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-xs font-medium"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center space-x-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
+                          <Heart className="w-4 h-4" />
+                          <span>{displayedArtworks[selectedArt]?.likes || 0}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
+                          <Eye className="w-4 h-4" />
+                          <span>{displayedArtworks[selectedArt]?.views || 0}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Load More Button */}
         <motion.div
