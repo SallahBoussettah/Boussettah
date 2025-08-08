@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { projectsAPI, Project } from "@/lib/api";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -437,13 +438,16 @@ function Navigation() {
                 </motion.div>
               </Link>
             ))}
-            
+
             {/* Developer Button */}
             <Link href="/login">
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.4 + navItems.length * 0.1, duration: 0.6 }}
+                transition={{
+                  delay: 1.4 + navItems.length * 0.1,
+                  duration: 0.6,
+                }}
                 className="ml-4"
               >
                 <motion.button
@@ -509,7 +513,7 @@ function Navigation() {
                   </motion.div>
                 </Link>
               ))}
-              
+
               {/* Developer Button - Mobile */}
               <Link href="/login">
                 <motion.div
@@ -770,49 +774,58 @@ function AboutSection() {
 
 // Work Showcase Section
 function WorkSection() {
-  const webProjects = [
-    {
-      title: "E-Commerce Platform",
-      tech: "React, Node.js, MongoDB",
-      year: "2025",
-      category: "web",
-    },
-    {
-      title: "Portfolio Website",
-      tech: "Next.js, Tailwind CSS",
-      year: "2025",
-      category: "web",
-    },
-    {
-      title: "Task Management App",
-      tech: "Vue.js, Firebase",
-      year: "2025",
-      category: "web",
-    },
-  ];
+  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const gameProjects = [
-    {
-      title: "Pixel Adventure",
-      tech: "Unity, C#",
-      year: "2025",
-      category: "game",
-    },
-    {
-      title: "Space Shooter",
-      tech: "Godot, GDScript",
-      year: "2025",
-      category: "game",
-    },
-    {
-      title: "Puzzle Platformer",
-      tech: "Unreal Engine, Blueprint",
-      year: "2025",
-      category: "game",
-    },
-  ];
+  useEffect(() => {
+    const fetchFeaturedProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await projectsAPI.getFeatured(6);
+        setFeaturedProjects(response.projects);
+      } catch (error) {
+        console.error("Error fetching featured projects:", error);
+        // Fallback to mock data if API fails
+        setFeaturedProjects([
+          {
+            title: "E-Commerce Platform",
+            technologies: ["React", "Node.js", "MongoDB"],
+            year: "2025",
+            category: "web",
+            slug: "ecommerce-platform",
+          },
+          {
+            title: "Pixel Adventure",
+            technologies: ["Unity", "C#"],
+            year: "2025",
+            category: "game",
+            slug: "pixel-adventure",
+          },
+          {
+            title: "Fitness Tracker",
+            technologies: ["React Native", "Firebase"],
+            year: "2025",
+            category: "mobile",
+            slug: "fitness-tracker",
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const allProjects = [...webProjects, ...gameProjects];
+    fetchFeaturedProjects();
+  }, []);
+
+  const allProjects = featuredProjects.map((project) => ({
+    title: project.title || "Untitled Project",
+    tech: Array.isArray(project.technologies)
+      ? project.technologies.slice(0, 3).join(", ")
+      : project.technologies || "",
+    year: project.year || "2025",
+    category: project.category || "web",
+    slug: project.slug || "project",
+  }));
 
   // Art gallery state
   const [selectedArt, setSelectedArt] = useState<number | null>(null);
@@ -841,82 +854,122 @@ function WorkSection() {
           Web Development & Game Development
         </AnimatedText>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-          {allProjects.map((project, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -10 }}
-              className="group cursor-pointer"
-            >
-              <div className="relative overflow-hidden rounded-xl mb-6">
-                <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative">
-                  <motion.div
-                    className="absolute inset-0 bg-black/0 group-hover:bg-black/20 dark:group-hover:bg-white/20 transition-all duration-500 flex items-center justify-center"
-                    whileHover={{ backgroundColor: "rgba(0,0,0,0.2)" }}
-                  >
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      whileHover={{ scale: 1, opacity: 1 }}
-                      className="w-16 h-16 bg-white dark:bg-black rounded-full flex items-center justify-center"
-                    >
-                      {project.category === "web" ? (
-                        <ExternalLink className="w-6 h-6 text-black dark:text-white" />
-                      ) : (
-                        <Play className="w-6 h-6 text-black dark:text-white ml-1" />
-                      )}
-                    </motion.div>
-                  </motion.div>
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="aspect-video bg-slate-200 dark:bg-slate-800 rounded-xl mb-6"></div>
+                <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded mb-2"></div>
+                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded mb-2 w-3/4"></div>
+                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+            {allProjects.map((project, index) => (
+              <Link key={index} href={`/project-detail/${project.slug}`}>
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -10 }}
+                  className="group cursor-pointer"
+                >
+                  <div className="relative overflow-hidden rounded-xl mb-6">
+                    <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative">
+                      <motion.div
+                        className="absolute inset-0 bg-black/0 group-hover:bg-black/20 dark:group-hover:bg-white/20 transition-all duration-500 flex items-center justify-center"
+                        whileHover={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+                      >
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          whileHover={{ scale: 1, opacity: 1 }}
+                          className="w-16 h-16 bg-white dark:bg-black rounded-full flex items-center justify-center"
+                        >
+                          {project.category === "web" ? (
+                            <ExternalLink className="w-6 h-6 text-black dark:text-white" />
+                          ) : (
+                            <Play className="w-6 h-6 text-black dark:text-white ml-1" />
+                          )}
+                        </motion.div>
+                      </motion.div>
 
-                  <motion.div
-                    className="absolute inset-0 flex items-center justify-center"
-                    animate={{
-                      scale: [1, 1.02, 1],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    <div
-                      className={`text-4xl font-bold ${
-                        project.category === "web"
-                          ? "text-blue-500/30"
-                          : "text-green-500/30"
-                      }`}
-                    >
-                      {project.category === "web" ? (
-                        <Code className="w-12 h-12" />
-                      ) : (
-                        <Gamepad2 className="w-12 h-12" />
-                      )}
+                      <motion.div
+                        className="absolute inset-0 flex items-center justify-center"
+                        animate={{
+                          scale: [1, 1.02, 1],
+                        }}
+                        transition={{
+                          duration: 4,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        <div
+                          className={`text-4xl font-bold ${
+                            project.category === "web"
+                              ? "text-blue-500/30"
+                              : project.category === "game"
+                              ? "text-green-500/30"
+                              : "text-purple-500/30"
+                          }`}
+                        >
+                          {project.category === "web" ? (
+                            <Code className="w-12 h-12" />
+                          ) : project.category === "game" ? (
+                            <Gamepad2 className="w-12 h-12" />
+                          ) : (
+                            <Palette className="w-12 h-12" />
+                          )}
+                        </div>
+                      </motion.div>
                     </div>
-                  </motion.div>
-                </div>
-              </div>
+                  </div>
 
-              <motion.h3
-                className="text-xl font-semibold mb-2 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors text-black dark:text-white"
-                layout
+                  <motion.h3
+                    className="text-xl font-semibold mb-2 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors text-black dark:text-white"
+                    layout
+                  >
+                    {project.title}
+                  </motion.h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+                    {project.tech}
+                  </p>
+                  <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400">
+                    <span className="capitalize">
+                      {project.category} Development
+                    </span>
+                    <span>{project.year}</span>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* View All Projects Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="text-center mb-20"
+        >
+          <Link href="/projects">
+            <Button className="group bg-black dark:bg-white text-white dark:text-black px-8 py-3 text-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300">
+              View All Projects
+              <motion.div
+                className="ml-2"
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
               >
-                {project.title}
-              </motion.h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
-                {project.tech}
-              </p>
-              <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400">
-                <span className="capitalize">
-                  {project.category} Development
-                </span>
-                <span>{project.year}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <ArrowRight className="w-5 h-5" />
+              </motion.div>
+            </Button>
+          </Link>
+        </motion.div>
 
         {/* Digital Art Section */}
         <AnimatedText className="text-4xl md:text-5xl font-bold mb-16 text-center text-black dark:text-white">

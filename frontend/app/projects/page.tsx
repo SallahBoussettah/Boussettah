@@ -6,6 +6,7 @@ import { ArrowRight, Play, ExternalLink, Github, Sun, Moon, Code, Gamepad2, Smar
 import { Button } from '@/components/ui/button'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
+import { projectsAPI } from '@/lib/api'
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -860,131 +861,59 @@ function MobileAppCard({ project, index }: { project: any, index: number }) {
 // Projects Showcase Section
 function ProjectsShowcase() {
   const [activeFilter, setActiveFilter] = useState('all')
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const webProjects = [
-    {
-      title: "E-Commerce Platform",
-      subtitle: "Full-Stack Shopping Solution",
-      description: "A comprehensive e-commerce platform with advanced features including user authentication, payment processing, inventory management, and admin dashboard.",
-      technologies: ["React", "Node.js", "MongoDB", "Stripe", "JWT", "Redux"],
-      category: "web",
-      year: "2025",
-      status: "completed",
-      liveUrl: "https://example.com",
-      githubUrl: "https://github.com/example",
-      stars: "45",
-      featured: true,
-      slug: "ecommerce-platform"
-    },
-    {
-      title: "Task Management App",
-      subtitle: "Collaborative Productivity Tool",
-      description: "A real-time collaborative task management application with team features, notifications, and advanced project tracking capabilities.",
-      technologies: ["Vue.js", "Firebase", "Vuex", "CSS3", "PWA"],
-      category: "web",
-      year: "2025",
-      status: "completed",
-      liveUrl: "https://example.com",
-      githubUrl: "https://github.com/example",
-      stars: "32",
-      slug: "task-management-app"
-    },
-    {
-      title: "Portfolio Website",
-      subtitle: "Personal Brand Showcase",
-      description: "A responsive portfolio website with smooth animations, dark mode support, and optimized performance for showcasing creative work.",
-      technologies: ["Next.js", "Tailwind CSS", "Framer Motion", "TypeScript"],
-      category: "web",
-      year: "2025",
-      status: "completed",
-      liveUrl: "https://example.com",
-      githubUrl: "https://github.com/example",
-      stars: "28",
-      slug: "portfolio-website"
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true)
+        const response = await projectsAPI.getAll({
+          limit: 50,
+          sortBy: 'priority',
+          sortOrder: 'DESC'
+        })
+        setProjects(response.projects)
+      } catch (err) {
+        console.error('Error fetching projects:', err)
+        setError('Failed to load projects')
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
 
-  const gameProjects = [
-    {
-      title: "Pixel Adventure",
-      subtitle: "2D Platformer Game",
-      description: "An engaging 2D platformer with multiple levels, power-ups, smooth character controls, and retro-style pixel art graphics.",
-      technologies: ["Unity", "C#", "2D Physics", "Animation", "Audio"],
-      category: "game",
-      year: "2025",
-      status: "completed",
-      downloads: "5K+",
-      featured: true,
-      slug: "pixel-adventure"
-    },
-    {
-      title: "Space Shooter",
-      subtitle: "Arcade Action Game",
-      description: "A fast-paced arcade-style space shooter featuring enemy AI, progressive difficulty, power-ups, and stunning visual effects.",
-      technologies: ["Godot", "GDScript", "2D Graphics", "Audio", "Particles"],
-      category: "game",
-      year: "2024",
-      status: "completed",
-      downloads: "3K+",
-      slug: "space-shooter"
-    },
-    {
-      title: "Puzzle Platformer",
-      subtitle: "Mind-Bending Adventure",
-      description: "A creative puzzle platformer with physics-based challenges, stunning 3D visuals, and innovative gameplay mechanics.",
-      technologies: ["Unreal Engine", "Blueprint", "3D Graphics", "Physics", "Lighting"],
-      category: "game",
-      year: "2024",
-      status: "in-progress",
-      slug: "puzzle-platformer"
-    }
-  ]
-
-  const mobileProjects = [
-    {
-      title: "Fitness Tracker",
-      subtitle: "Health & Wellness App",
-      description: "A comprehensive fitness tracking app with workout plans, nutrition tracking, progress analytics, and social features for motivation.",
-      technologies: ["React Native", "Expo", "Firebase", "Charts", "HealthKit"],
-      category: "mobile",
-      year: "2025",
-      status: "completed",
-      downloads: "2K+",
-      slug: "fitness-tracker"
-    },
-    {
-      title: "Weather App",
-      subtitle: "Beautiful Weather Forecasts",
-      description: "An elegant weather application with location-based forecasts, animated backgrounds, and detailed weather information.",
-      technologies: ["Flutter", "Dart", "Weather API", "Animations", "Location"],
-      category: "mobile",
-      year: "2024",
-      status: "completed",
-      downloads: "8K+",
-      featured: true,
-      slug: "weather-app"
-    },
-    {
-      title: "Recipe Sharing",
-      subtitle: "Social Cooking Platform",
-      description: "A social platform for sharing recipes, rating dishes, following chefs, and discovering new culinary experiences.",
-      technologies: ["React Native", "Node.js", "MongoDB", "Image Upload", "Social"],
-      category: "mobile",
-      year: "2024",
-      status: "in-progress",
-      slug: "recipe-sharing"
-    }
-  ]
-
-  const allProjects = [...webProjects, ...gameProjects, ...mobileProjects]
+    fetchProjects()
+  }, [])
 
   const filteredProjects = activeFilter === 'all' 
-    ? allProjects 
-    : allProjects.filter(project => project.category === activeFilter)
+    ? projects 
+    : projects.filter(project => project.category === activeFilter)
 
   const webFilteredProjects = filteredProjects.filter(p => p.category === 'web')
   const gameFilteredProjects = filteredProjects.filter(p => p.category === 'game')
   const mobileFilteredProjects = filteredProjects.filter(p => p.category === 'mobile')
+
+  if (loading) {
+    return (
+      <section className="py-32 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="w-8 h-8 border-2 border-slate-300 dark:border-slate-600 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Loading projects...</p>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section className="py-32 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-32 px-6">

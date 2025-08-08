@@ -130,6 +130,39 @@ router.get('/',
   }
 );
 
+// Get featured projects (public endpoint)
+router.get('/featured', async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+
+    const projects = await Project.findAll({
+      where: { 
+        featured: true,
+        isPublic: true 
+      },
+      limit: parseInt(limit),
+      order: [
+        ['priority', 'DESC'],
+        ['createdAt', 'DESC']
+      ],
+      attributes: {
+        exclude: ['longDescription', 'features', 'challenges', 'learnings']
+      }
+    });
+
+    res.json({
+      projects,
+      total: projects.length
+    });
+
+  } catch (error) {
+    console.error('Get featured projects error:', error);
+    res.status(500).json({
+      message: 'Internal server error'
+    });
+  }
+});
+
 // Get single project by slug (public endpoint)
 router.get('/:slug', async (req, res) => {
   try {
@@ -527,39 +560,6 @@ router.patch('/admin/bulk-update', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Bulk update projects error:', error);
-    res.status(500).json({
-      message: 'Internal server error'
-    });
-  }
-});
-
-// Get featured projects (public endpoint)
-router.get('/featured', async (req, res) => {
-  try {
-    const { limit = 6 } = req.query;
-
-    const projects = await Project.findAll({
-      where: { 
-        featured: true,
-        isPublic: true 
-      },
-      limit: parseInt(limit),
-      order: [
-        ['priority', 'DESC'],
-        ['createdAt', 'DESC']
-      ],
-      attributes: {
-        exclude: ['longDescription', 'features', 'challenges', 'learnings']
-      }
-    });
-
-    res.json({
-      projects,
-      total: projects.length
-    });
-
-  } catch (error) {
-    console.error('Get featured projects error:', error);
     res.status(500).json({
       message: 'Internal server error'
     });
