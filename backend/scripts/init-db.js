@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { sequelize, initializeModels } = require('../models');
 
 async function initializeDatabase() {

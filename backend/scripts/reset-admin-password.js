@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { Admin } = require('../models');
 const readline = require('readline');
 

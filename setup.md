@@ -32,8 +32,13 @@ cd backend
 # Install dependencies
 npm install
 
-# Initialize database (creates tables and default admin)
-node scripts/init-db.js
+# Complete setup (creates tables, runs migrations, seeds data)
+npm run setup
+
+# OR run steps individually:
+# npm run init-db      # Initialize database and create admin
+# npm run migrate      # Run database migrations
+# npm run seed-projects # Seed sample projects
 
 # Start the backend server
 npm run dev

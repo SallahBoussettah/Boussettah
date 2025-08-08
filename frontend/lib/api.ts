@@ -15,22 +15,40 @@ export interface LoginResponse {
 export interface Project {
   id: number;
   title: string;
+  subtitle?: string;
   slug: string;
   description?: string;
+  longDescription?: string;
   shortDescription?: string;
   category: 'web' | 'mobile' | 'game' | 'desktop';
   status: 'planning' | 'in-progress' | 'completed' | 'on-hold';
   technologies: string[];
+  features?: string[];
+  challenges?: string[];
+  learnings?: string[];
   githubUrl?: string;
   liveUrl?: string;
+  demoUrl?: string;
   imageUrl?: string;
+  thumbnailUrl?: string;
   images: string[];
   featured: boolean;
   priority: number;
+  year?: string;
   startDate?: string;
   endDate?: string;
   views: number;
   likes: number;
+  stars?: string;
+  downloads?: string;
+  isPublic: boolean;
+  completionPercentage: number;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  teamSize: number;
+  duration?: string;
+  client?: string;
+  awards?: string[];
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -232,6 +250,76 @@ export const projectsAPI = {
     
     if (!response.ok) {
       throw new Error('Failed to like project');
+    }
+    
+    return response.json();
+  },
+
+  // Admin endpoints
+  getStats: async () => {
+    return makeAuthenticatedRequest('/projects/admin/stats');
+  },
+
+  getAllAdmin: async (params?: {
+    category?: string;
+    status?: string;
+    featured?: boolean;
+    limit?: number;
+    offset?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+
+    const url = `/projects/admin/all${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    return makeAuthenticatedRequest(url);
+  },
+
+  bulkUpdate: async (projectIds: number[], updates: Partial<Project>) => {
+    return makeAuthenticatedRequest('/projects/admin/bulk-update', {
+      method: 'PATCH',
+      body: JSON.stringify({ projectIds, updates }),
+    });
+  },
+
+  // Public endpoints
+  getFeatured: async (limit?: number) => {
+    const url = `/projects/featured${limit ? `?limit=${limit}` : ''}`;
+    const response = await fetch(`${API_BASE_URL}${url}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch featured projects');
+    }
+    
+    return response.json();
+  },
+
+  getByCategory: async (category: string, params?: {
+    limit?: number;
+    offset?: number;
+  }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+
+    const url = `/projects/category/${category}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const response = await fetch(`${API_BASE_URL}${url}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${category} projects`);
     }
     
     return response.json();
