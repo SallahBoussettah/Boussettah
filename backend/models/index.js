@@ -3,6 +3,8 @@ const Admin = require('./Admin');
 const Project = require('./Project');
 const Art = require('./Art');
 const Education = require('./Education');
+const Experience = require('./Experience');
+const TechStack = require('./TechStack');
 
 // Initialize models and create default admin
 const initializeModels = async () => {
@@ -25,5 +27,7 @@ module.exports = {
   Project,
   Art,
   Education,
+  Experience,
+  TechStack,
   initializeModels
 };

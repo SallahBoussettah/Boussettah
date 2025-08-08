@@ -25,6 +25,8 @@ import {
   BarChart3,
   Users,
   Calendar,
+  MapPin,
+  Database,
   Settings,
   LogOut,
   Search,
@@ -52,6 +54,10 @@ import {
   uploadAPI,
   educationAPI,
   Education,
+  experienceAPI,
+  Experience,
+  techStackAPI,
+  TechStack,
 } from "@/lib/api";
 
 // Theme Toggle Component
@@ -208,6 +214,8 @@ function Sidebar({
     { id: "projects", label: "Projects", icon: Code },
     { id: "art", label: "Art Gallery", icon: Palette },
     { id: "education", label: "Education", icon: Calendar },
+    { id: "experience", label: "Experience", icon: Users },
+    { id: "techstack", label: "Tech Stack", icon: Database },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -2271,7 +2279,7 @@ function EducationTab() {
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onClick={onCancel}
       >
-        <div 
+        <div
           className="bg-white dark:bg-black rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
           onClick={(e) => e.stopPropagation()}
         >
@@ -2279,146 +2287,146 @@ function EducationTab() {
             {educationItem ? "Edit Education" : "Add New Education"}
           </h3>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Degree *
-              </label>
-              <Input
-                type="text"
-                value={formData.degree}
-                onChange={(e) =>
-                  setFormData({ ...formData, degree: e.target.value })
-                }
-                placeholder="e.g., Master's in Computer Science"
-                required
-                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-              />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Degree *
+                </label>
+                <Input
+                  type="text"
+                  value={formData.degree}
+                  onChange={(e) =>
+                    setFormData({ ...formData, degree: e.target.value })
+                  }
+                  placeholder="e.g., Master's in Computer Science"
+                  required
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  School *
+                </label>
+                <Input
+                  type="text"
+                  value={formData.school}
+                  onChange={(e) =>
+                    setFormData({ ...formData, school: e.target.value })
+                  }
+                  placeholder="e.g., University of Technology"
+                  required
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Year *
+                </label>
+                <Input
+                  type="text"
+                  value={formData.year}
+                  onChange={(e) =>
+                    setFormData({ ...formData, year: e.target.value })
+                  }
+                  placeholder="e.g., 2020 - 2022"
+                  required
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Icon
+                </label>
+                <select
+                  value={formData.icon}
+                  onChange={(e) =>
+                    setFormData({ ...formData, icon: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-black dark:text-white"
+                >
+                  {iconOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Order
+                </label>
+                <Input
+                  type="number"
+                  value={formData.order}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      order: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  placeholder="0"
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isActive: e.target.checked })
+                  }
+                  className="rounded border-slate-300 dark:border-slate-600"
+                />
+                <label
+                  htmlFor="isActive"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Active
+                </label>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                School *
+                Description
               </label>
-              <Input
-                type="text"
-                value={formData.school}
+              <Textarea
+                value={formData.description}
                 onChange={(e) =>
-                  setFormData({ ...formData, school: e.target.value })
+                  setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="e.g., University of Technology"
-                required
+                placeholder="Brief description of the education..."
+                rows={3}
                 className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Year *
-              </label>
-              <Input
-                type="text"
-                value={formData.year}
-                onChange={(e) =>
-                  setFormData({ ...formData, year: e.target.value })
-                }
-                placeholder="e.g., 2020 - 2022"
-                required
-                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Icon
-              </label>
-              <select
-                value={formData.icon}
-                onChange={(e) =>
-                  setFormData({ ...formData, icon: e.target.value })
-                }
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-black dark:text-white"
+            <div className="flex space-x-3">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
               >
-                {iconOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Order
-              </label>
-              <Input
-                type="number"
-                value={formData.order}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    order: parseInt(e.target.value) || 0,
-                  })
-                }
-                placeholder="0"
-                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-              />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
-                }
-                className="rounded border-slate-300 dark:border-slate-600"
-              />
-              <label
-                htmlFor="isActive"
-                className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                <Save className="w-4 h-4 mr-2" />
+                {isSubmitting ? "Saving..." : educationItem ? "Update" : "Save"}
+              </Button>
+              <Button
+                type="button"
+                onClick={onCancel}
+                variant="outline"
+                className="border-slate-300 dark:border-slate-600"
               >
-                Active
-              </label>
+                Cancel
+              </Button>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Description
-            </label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              placeholder="Brief description of the education..."
-              rows={3}
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
-
-          <div className="flex space-x-3">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isSubmitting ? "Saving..." : educationItem ? "Update" : "Save"}
-            </Button>
-            <Button
-              type="button"
-              onClick={onCancel}
-              variant="outline"
-              className="border-slate-300 dark:border-slate-600"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
+          </form>
         </div>
       </motion.div>
     );
@@ -2597,6 +2605,975 @@ function EducationTab() {
                     </div>
 
                     <div className="flex items-center space-x-2 ml-4">
+                      <Button
+                        onClick={() => handleEdit(item)}
+                        size="sm"
+                        variant="outline"
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(item.id)}
+                        size="sm"
+                        variant="outline"
+                        className="border-red-300 dark:border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// Experience Tab Component
+function ExperienceTab() {
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingExperience, setEditingExperience] = useState<Experience | null>(
+    null
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    fetchExperiences();
+  }, []);
+
+  const fetchExperiences = async () => {
+    try {
+      setLoading(true);
+      const response = await experienceAPI.getAllAdmin();
+      setExperiences(response || []);
+    } catch (error) {
+      console.error("Error fetching experiences:", error);
+      setExperiences([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchExperiences();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
+
+  const ExperienceForm = ({
+    experience: experienceItem,
+    onSave,
+    onCancel,
+  }: {
+    experience?: Experience | null;
+    onSave: (data: any) => void;
+    onCancel: () => void;
+  }) => {
+    const [formData, setFormData] = useState({
+      title: experienceItem?.title || "",
+      company: experienceItem?.company || "",
+      period: experienceItem?.period || "",
+      location: experienceItem?.location || "",
+      description: experienceItem?.description || "",
+      achievements: experienceItem?.achievements || [],
+      order: experienceItem?.order || 0,
+      isActive:
+        experienceItem?.isActive !== undefined ? experienceItem.isActive : true,
+      isCurrent: experienceItem?.isCurrent || false,
+    });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [achievementInput, setAchievementInput] = useState("");
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+
+      try {
+        await onSave(formData);
+      } catch (error) {
+        console.error("Error saving experience:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    const addAchievement = () => {
+      if (achievementInput.trim()) {
+        setFormData({
+          ...formData,
+          achievements: [...formData.achievements, achievementInput.trim()],
+        });
+        setAchievementInput("");
+      }
+    };
+
+    const removeAchievement = (index: number) => {
+      setFormData({
+        ...formData,
+        achievements: formData.achievements.filter((_, i) => i !== index),
+      });
+    };
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={onCancel}
+      >
+        <div
+          className="bg-white dark:bg-black rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="text-2xl font-bold text-black dark:text-white mb-6">
+            {experienceItem ? "Edit Experience" : "Add New Experience"}
+          </h3>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Job Title *
+                </label>
+                <Input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  placeholder="e.g., Senior Full Stack Developer"
+                  required
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Company *
+                </label>
+                <Input
+                  type="text"
+                  value={formData.company}
+                  onChange={(e) =>
+                    setFormData({ ...formData, company: e.target.value })
+                  }
+                  placeholder="e.g., TechCorp Solutions"
+                  required
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Period *
+                </label>
+                <Input
+                  type="text"
+                  value={formData.period}
+                  onChange={(e) =>
+                    setFormData({ ...formData, period: e.target.value })
+                  }
+                  placeholder="e.g., 2022 - Present"
+                  required
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Location
+                </label>
+                <Input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
+                  }
+                  placeholder="e.g., Remote, New York"
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Order
+                </label>
+                <Input
+                  type="number"
+                  value={formData.order}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      order: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  placeholder="0"
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isActive: e.target.checked })
+                    }
+                    className="rounded border-slate-300 dark:border-slate-600"
+                  />
+                  <label
+                    htmlFor="isActive"
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    Active
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isCurrent"
+                    checked={formData.isCurrent}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isCurrent: e.target.checked })
+                    }
+                    className="rounded border-slate-300 dark:border-slate-600"
+                  />
+                  <label
+                    htmlFor="isCurrent"
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    Current Position
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Description
+              </label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                placeholder="Brief description of your role and responsibilities..."
+                rows={4}
+                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Key Achievements
+              </label>
+              <div className="space-y-2">
+                <div className="flex space-x-2">
+                  <Input
+                    type="text"
+                    value={achievementInput}
+                    onChange={(e) => setAchievementInput(e.target.value)}
+                    placeholder="Add an achievement..."
+                    className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                    onKeyPress={(e) =>
+                      e.key === "Enter" &&
+                      (e.preventDefault(), addAchievement())
+                    }
+                  />
+                  <Button
+                    type="button"
+                    onClick={addAchievement}
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {formData.achievements.length > 0 && (
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {formData.achievements.map((achievement, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 p-2 rounded"
+                      >
+                        <span className="text-sm text-slate-700 dark:text-slate-300">
+                          {achievement}
+                        </span>
+                        <Button
+                          type="button"
+                          onClick={() => removeAchievement(index)}
+                          size="sm"
+                          variant="outline"
+                          className="border-red-300 dark:border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSubmitting
+                  ? "Saving..."
+                  : experienceItem
+                  ? "Update"
+                  : "Save"}
+              </Button>
+              <Button
+                type="button"
+                onClick={onCancel}
+                variant="outline"
+                className="border-slate-300 dark:border-slate-600"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </div>
+      </motion.div>
+    );
+  };
+
+  const handleSaveExperience = async (experienceData: any) => {
+    try {
+      if (editingExperience) {
+        await experienceAPI.update(editingExperience.id, experienceData);
+        setEditingExperience(null);
+      } else {
+        await experienceAPI.create(experienceData);
+        setShowAddForm(false);
+      }
+      await fetchExperiences();
+    } catch (error: any) {
+      console.error("Error saving experience:", error);
+      alert(error.message || "Failed to save experience entry");
+      throw error;
+    }
+  };
+
+  const handleEdit = (experienceItem: Experience) => {
+    setEditingExperience(experienceItem);
+    setShowAddForm(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Are you sure you want to delete this experience entry?")) {
+      try {
+        await experienceAPI.delete(id);
+        await fetchExperiences();
+      } catch (error) {
+        console.error("Error deleting experience:", error);
+        alert("Failed to delete experience entry");
+      }
+    }
+  };
+
+  const filteredExperiences = experiences.filter(
+    (item) =>
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.period.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-2xl font-bold text-black dark:text-white">
+          Experience Management ({experiences.length})
+        </h2>
+        <Button
+          onClick={() => setShowAddForm(true)}
+          className="bg-orange-500 hover:bg-orange-600 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Experience
+        </Button>
+      </div>
+
+      {/* Search */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="md:col-span-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search experience..."
+              className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-48 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Add/Edit Form */}
+      {(showAddForm || editingExperience) && (
+        <ExperienceForm
+          experience={editingExperience}
+          onSave={handleSaveExperience}
+          onCancel={() => {
+            setShowAddForm(false);
+            setEditingExperience(null);
+          }}
+        />
+      )}
+
+      {/* Experience List */}
+      {!loading && (
+        <>
+          {filteredExperiences.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-2">
+                No experience entries found
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
+                {searchTerm
+                  ? "Try adjusting your search terms."
+                  : "Add your first experience entry to get started."}
+              </p>
+              {!searchTerm && (
+                <Button
+                  onClick={() => setShowAddForm(true)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Experience
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {filteredExperiences.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                          <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-black dark:text-white">
+                            {item.title}
+                          </h3>
+                          <p className="text-blue-500 font-medium">
+                            {item.company}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400 mb-3">
+                        <span className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{item.period}</span>
+                        </span>
+                        {item.location && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center space-x-1">
+                              <MapPin className="w-4 h-4" />
+                              <span>{item.location}</span>
+                            </span>
+                          </>
+                        )}
+                        <span>•</span>
+                        <span>Order: {item.order}</span>
+                        <span>•</span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            item.isActive
+                              ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                              : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200"
+                          }`}
+                        >
+                          {item.isActive ? "Active" : "Inactive"}
+                        </span>
+                        {item.isCurrent && (
+                          <>
+                            <span>•</span>
+                            <span className="px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                              Current
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      {item.description && (
+                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
+                          {item.description}
+                        </p>
+                      )}
+
+                      {item.achievements && item.achievements.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-black dark:text-white mb-2 text-sm">
+                            Key Achievements:
+                          </h4>
+                          <ul className="space-y-1">
+                            {item.achievements
+                              .slice(0, 3)
+                              .map((achievement, achIndex) => (
+                                <li
+                                  key={achIndex}
+                                  className="flex items-center space-x-2 text-slate-600 dark:text-slate-300 text-sm"
+                                >
+                                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0" />
+                                  <span>{achievement}</span>
+                                </li>
+                              ))}
+                            {item.achievements.length > 3 && (
+                              <li className="text-slate-500 dark:text-slate-400 text-xs">
+                                +{item.achievements.length - 3} more
+                                achievements
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center space-x-2 ml-4">
+                      <Button
+                        onClick={() => handleEdit(item)}
+                        size="sm"
+                        variant="outline"
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(item.id)}
+                        size="sm"
+                        variant="outline"
+                        className="border-red-300 dark:border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// TechStack Tab Component
+function TechStackTab() {
+  const [techStacks, setTechStacks] = useState<TechStack[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingTechStack, setEditingTechStack] = useState<TechStack | null>(
+    null
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+
+  useEffect(() => {
+    fetchTechStacks();
+  }, []);
+
+  const fetchTechStacks = async () => {
+    try {
+      setLoading(true);
+      const response = await techStackAPI.getAllAdmin();
+      setTechStacks(response || []);
+    } catch (error) {
+      console.error("Error fetching tech stacks:", error);
+      setTechStacks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchTechStacks();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm, filterCategory]);
+
+  const TechStackForm = ({
+    techStack: techStackItem,
+    onSave,
+    onCancel,
+  }: {
+    techStack?: TechStack | null;
+    onSave: (data: any) => void;
+    onCancel: () => void;
+  }) => {
+    const [formData, setFormData] = useState({
+      name: techStackItem?.name || "",
+      category: techStackItem?.category || "Frontend",
+      order: techStackItem?.order || 0,
+      isActive:
+        techStackItem?.isActive !== undefined ? techStackItem.isActive : true,
+    });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+
+      try {
+        await onSave(formData);
+      } catch (error) {
+        console.error("Error saving tech stack:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    const categories = [
+      "Frontend",
+      "Backend",
+      "Mobile",
+      "Game Dev",
+      "Design",
+      "Tools",
+    ];
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={onCancel}
+      >
+        <div
+          className="bg-white dark:bg-black rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="text-2xl font-bold text-black dark:text-white mb-6">
+            {techStackItem ? "Edit Tech Stack" : "Add New Tech Stack"}
+          </h3>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Technology Name *
+                </label>
+                <Input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="e.g., React, Node.js, Figma"
+                  required
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Category *
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-black dark:text-white"
+                  required
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Order
+                </label>
+                <Input
+                  type="number"
+                  value={formData.order}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      order: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  placeholder="0"
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isActive: e.target.checked })
+                  }
+                  className="rounded border-slate-300 dark:border-slate-600"
+                />
+                <label
+                  htmlFor="isActive"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Active
+                </label>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSubmitting ? "Saving..." : techStackItem ? "Update" : "Save"}
+              </Button>
+              <Button
+                type="button"
+                onClick={onCancel}
+                variant="outline"
+                className="border-slate-300 dark:border-slate-600"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </div>
+      </motion.div>
+    );
+  };
+
+  const handleSaveTechStack = async (techStackData: any) => {
+    try {
+      if (editingTechStack) {
+        await techStackAPI.update(editingTechStack.id, techStackData);
+        setEditingTechStack(null);
+      } else {
+        await techStackAPI.create(techStackData);
+        setShowAddForm(false);
+      }
+      await fetchTechStacks();
+    } catch (error: any) {
+      console.error("Error saving tech stack:", error);
+      alert(error.message || "Failed to save tech stack entry");
+      throw error;
+    }
+  };
+
+  const handleEdit = (techStackItem: TechStack) => {
+    setEditingTechStack(techStackItem);
+    setShowAddForm(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Are you sure you want to delete this tech stack entry?")) {
+      try {
+        await techStackAPI.delete(id);
+        await fetchTechStacks();
+      } catch (error) {
+        console.error("Error deleting tech stack:", error);
+        alert("Failed to delete tech stack entry");
+      }
+    }
+  };
+
+  const filteredTechStacks = techStacks.filter((item) => {
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory = !filterCategory || item.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = [
+    "Frontend",
+    "Backend",
+    "Mobile",
+    "Game Dev",
+    "Design",
+    "Tools",
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-2xl font-bold text-black dark:text-white">
+          Tech Stack Management ({techStacks.length})
+        </h2>
+        <Button
+          onClick={() => setShowAddForm(true)}
+          className="bg-indigo-500 hover:bg-indigo-600 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Technology
+        </Button>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="md:col-span-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search technologies..."
+              className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+            />
+          </div>
+        </div>
+
+        <div>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-black dark:text-white"
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-20 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Add/Edit Form */}
+      {(showAddForm || editingTechStack) && (
+        <TechStackForm
+          techStack={editingTechStack}
+          onSave={handleSaveTechStack}
+          onCancel={() => {
+            setShowAddForm(false);
+            setEditingTechStack(null);
+          }}
+        />
+      )}
+
+      {/* Tech Stack List */}
+      {!loading && (
+        <>
+          {filteredTechStacks.length === 0 ? (
+            <div className="text-center py-12">
+              <Settings className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-2">
+                No technologies found
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
+                {searchTerm || filterCategory
+                  ? "Try adjusting your search or filter."
+                  : "Add your first technology to get started."}
+              </p>
+              {!searchTerm && !filterCategory && (
+                <Button
+                  onClick={() => setShowAddForm(true)}
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Technology
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {filteredTechStacks.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+                        <Settings className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-black dark:text-white">
+                          {item.name}
+                        </h3>
+                        <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
+                          <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs">
+                            {item.category}
+                          </span>
+                          <span>Order: {item.order}</span>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${
+                              item.isActive
+                                ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                                : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200"
+                            }`}
+                          >
+                            {item.isActive ? "Active" : "Inactive"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
                       <Button
                         onClick={() => handleEdit(item)}
                         size="sm"
@@ -2875,6 +3852,10 @@ export default function AdminDashboard() {
         return <ArtTab />;
       case "education":
         return <EducationTab />;
+      case "experience":
+        return <ExperienceTab />;
+      case "techstack":
+        return <TechStackTab />;
       case "settings":
         return <SettingsTab />;
       default:

@@ -693,72 +693,64 @@ function EducationSection() {
 
 // Tech Stack Section
 function TechStackSection() {
-  const techCategories = [
-    {
-      title: "Frontend",
-      icon: Globe,
-      color: "blue",
-      technologies: [
-        "React",
-        "Next.js",
-        "Vue.js",
-        "TypeScript",
-        "Tailwind CSS",
-        "Framer Motion",
-      ],
-    },
-    {
-      title: "Backend",
-      icon: Server,
-      color: "green",
-      technologies: [
-        "Node.js",
-        "Python",
-        "Express",
-        "FastAPI",
-        "PostgreSQL",
-        "MongoDB",
-      ],
-    },
-    {
-      title: "Mobile",
-      icon: Smartphone,
-      color: "purple",
-      technologies: [
-        "React Native",
-        "Flutter",
-        "Swift",
-        "Kotlin",
-        "Expo",
-        "Firebase",
-      ],
-    },
-    {
-      title: "Game Dev",
-      icon: Gamepad2,
-      color: "orange",
-      technologies: ["Unity", "Unreal Engine", "Godot", "C#", "C++", "Blender"],
-    },
-    {
-      title: "Design",
-      icon: Palette,
-      color: "pink",
-      technologies: [
-        "Figma",
-        "Adobe Creative Suite",
-        "Sketch",
-        "Procreate",
-        "Cinema 4D",
-        "After Effects",
-      ],
-    },
-    {
-      title: "Tools",
-      icon: Database,
-      color: "indigo",
-      technologies: ["Git", "Docker", "AWS", "Vercel", "Linux", "VS Code"],
-    },
-  ];
+  const [techStackData, setTechStackData] = useState<Record<string, any[]>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTechStack = async () => {
+      try {
+        const { techStackAPI } = await import('@/lib/api');
+        const data = await techStackAPI.getAll();
+        setTechStackData(data);
+      } catch (error) {
+        console.error('Error fetching tech stack:', error);
+        // Fallback to empty object if API fails
+        setTechStackData({});
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTechStack();
+  }, []);
+
+  // Static category configuration (icons and colors remain the same)
+  const categoryConfig = {
+    "Frontend": { icon: Globe, color: "blue" },
+    "Backend": { icon: Server, color: "green" },
+    "Mobile": { icon: Smartphone, color: "purple" },
+    "Game Dev": { icon: Gamepad2, color: "orange" },
+    "Design": { icon: Palette, color: "pink" },
+    "Tools": { icon: Database, color: "indigo" },
+  };
+
+  // Convert API data to the format expected by the component
+  const techCategories = Object.keys(categoryConfig).map(categoryName => ({
+    title: categoryName,
+    icon: categoryConfig[categoryName as keyof typeof categoryConfig].icon,
+    color: categoryConfig[categoryName as keyof typeof categoryConfig].color,
+    technologies: techStackData[categoryName]?.map(tech => tech.name) || [],
+  }));
+
+  if (loading) {
+    return (
+      <section className="py-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mx-auto mb-6"></div>
+              <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded w-64 mx-auto mb-16"></div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-64 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const getColorClasses = (color: string) => {
     const colors = {
@@ -844,60 +836,46 @@ function TechStackSection() {
 
 // Experience Section
 function ExperienceSection() {
-  const experiences = [
-    {
-      title: "Senior Full Stack Developer",
-      company: "TechCorp Solutions",
-      period: "2022 - Present",
-      location: "Remote",
-      description:
-        "Leading development of scalable web applications using React, Node.js, and cloud technologies. Mentoring junior developers and architecting system solutions.",
-      achievements: [
-        "Increased application performance by 40%",
-        "Led a team of 5 developers",
-        "Implemented CI/CD pipelines",
-      ],
-    },
-    {
-      title: "Game Developer",
-      company: "Indie Game Studio",
-      period: "2021 - 2022",
-      location: "Morocco",
-      description:
-        "Developed mobile and PC games using Unity and C#. Collaborated with artists and designers to create engaging gaming experiences.",
-      achievements: [
-        "Published 3 successful mobile games",
-        "Achieved 100K+ downloads",
-        "Implemented multiplayer functionality",
-      ],
-    },
-    {
-      title: "Frontend Developer",
-      company: "Digital Agency",
-      period: "2020 - 2021",
-      location: "Casablanca, Morocco",
-      description:
-        "Created responsive web applications and interactive user interfaces. Worked closely with design teams to implement pixel-perfect designs.",
-      achievements: [
-        "Delivered 15+ client projects",
-        "Improved website loading speed by 60%",
-        "Implemented modern design systems",
-      ],
-    },
-    {
-      title: "Digital Artist (Freelance)",
-      company: "Various Clients",
-      period: "2019 - Present",
-      location: "Remote",
-      description:
-        "Creating digital illustrations, concept art, and visual designs for games, websites, and marketing materials.",
-      achievements: [
-        "Completed 50+ art commissions",
-        "Worked with international clients",
-        "Developed unique art style",
-      ],
-    },
-  ];
+  const [experiences, setExperiences] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      try {
+        const { experienceAPI } = await import('@/lib/api');
+        const data = await experienceAPI.getAll();
+        setExperiences(data);
+      } catch (error) {
+        console.error('Error fetching experiences:', error);
+        // Fallback to empty array if API fails
+        setExperiences([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExperiences();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-32 px-6 bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mx-auto mb-6"></div>
+              <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded w-64 mx-auto mb-16"></div>
+              <div className="space-y-12">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-64 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-32 px-6 bg-slate-50 dark:bg-slate-900">

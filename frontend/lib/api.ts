@@ -89,6 +89,31 @@ export interface Education {
   updatedAt: string;
 }
 
+export interface Experience {
+  id: number;
+  title: string;
+  company: string;
+  period: string;
+  location?: string;
+  description?: string;
+  achievements: string[];
+  order: number;
+  isActive: boolean;
+  isCurrent: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TechStack {
+  id: number;
+  name: string;
+  category: 'Frontend' | 'Backend' | 'Mobile' | 'Game Dev' | 'Design' | 'Tools';
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -647,6 +672,368 @@ export const educationAPI = {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Failed to reorder education entries' }));
       throw new Error(errorData.message || 'Failed to reorder education entries');
+    }
+  },
+};
+
+// Experience API
+export const experienceAPI = {
+  getAll: async (): Promise<Experience[]> => {
+    const response = await fetch(`${API_BASE_URL}/experience`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch experience data');
+    }
+    
+    return response.json();
+  },
+
+  getAllAdmin: async (): Promise<Experience[]> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/experience/admin`, {
+      method: 'GET',
+      headers,
+    });
+    
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch experience data');
+    }
+    
+    return response.json();
+  },
+
+  getById: async (id: number): Promise<Experience> => {
+    const response = await fetch(`${API_BASE_URL}/experience/${id}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch experience entry');
+    }
+    
+    return response.json();
+  },
+
+  create: async (experienceData: Omit<Experience, 'id' | 'createdAt' | 'updatedAt'>): Promise<Experience> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/experience`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(experienceData),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to create experience entry' }));
+      throw new Error(errorData.message || 'Failed to create experience entry');
+    }
+
+    return response.json();
+  },
+
+  update: async (id: number, experienceData: Partial<Omit<Experience, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Experience> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/experience/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(experienceData),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to update experience entry' }));
+      throw new Error(errorData.message || 'Failed to update experience entry');
+    }
+
+    return response.json();
+  },
+
+  delete: async (id: number): Promise<void> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/experience/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to delete experience entry' }));
+      throw new Error(errorData.message || 'Failed to delete experience entry');
+    }
+  },
+
+  reorder: async (experienceIds: number[]): Promise<void> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/experience/reorder`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ experienceIds }),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to reorder experience entries' }));
+      throw new Error(errorData.message || 'Failed to reorder experience entries');
+    }
+  },
+};
+
+// TechStack API
+export const techStackAPI = {
+  getAll: async (): Promise<Record<string, TechStack[]>> => {
+    const response = await fetch(`${API_BASE_URL}/techstack`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch tech stack data');
+    }
+    
+    return response.json();
+  },
+
+  getAllAdmin: async (): Promise<TechStack[]> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/techstack/admin`, {
+      method: 'GET',
+      headers,
+    });
+    
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch tech stack data');
+    }
+    
+    return response.json();
+  },
+
+  getById: async (id: number): Promise<TechStack> => {
+    const response = await fetch(`${API_BASE_URL}/techstack/${id}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch tech stack entry');
+    }
+    
+    return response.json();
+  },
+
+  create: async (techStackData: Omit<TechStack, 'id' | 'createdAt' | 'updatedAt'>): Promise<TechStack> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/techstack`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(techStackData),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to create tech stack entry' }));
+      throw new Error(errorData.message || 'Failed to create tech stack entry');
+    }
+
+    return response.json();
+  },
+
+  update: async (id: number, techStackData: Partial<Omit<TechStack, 'id' | 'createdAt' | 'updatedAt'>>): Promise<TechStack> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/techstack/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(techStackData),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to update tech stack entry' }));
+      throw new Error(errorData.message || 'Failed to update tech stack entry');
+    }
+
+    return response.json();
+  },
+
+  delete: async (id: number): Promise<void> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/techstack/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to delete tech stack entry' }));
+      throw new Error(errorData.message || 'Failed to delete tech stack entry');
+    }
+  },
+
+  reorder: async (techStackIds: number[]): Promise<void> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/techstack/reorder`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ techStackIds }),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to reorder tech stack entries' }));
+      throw new Error(errorData.message || 'Failed to reorder tech stack entries');
     }
   },
 };
