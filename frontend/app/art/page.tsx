@@ -637,22 +637,6 @@ function ArtCard({
           </motion.div>
 
           {/* Art preview with floating elements */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
-              animate={{
-                rotate: [0, 360],
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                duration: 15 + index,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="text-6xl opacity-30"
-            >
-              <Palette className="w-16 h-16 text-white" />
-            </motion.div>
-          </div>
 
           {/* Floating art elements */}
           <motion.div
@@ -710,9 +694,6 @@ function ArtCard({
             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
               {artwork.medium || "Digital Art"}
             </p>
-          </div>
-          <div className="text-purple-500 ml-4">
-            <Palette className="w-6 h-6 text-slate-400 dark:text-slate-600" />
           </div>
         </div>
 
