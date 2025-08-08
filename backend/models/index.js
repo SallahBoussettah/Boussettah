@@ -6,6 +6,7 @@ const Education = require('./Education');
 const Experience = require('./Experience');
 const TechStack = require('./TechStack');
 const Settings = require('./Settings');
+const Contact = require('./Contact')(sequelize);
 
 // Initialize models and create default admin
 const initializeModels = async () => {
@@ -34,5 +35,6 @@ module.exports = {
   Experience,
   TechStack,
   Settings,
+  Contact,
   initializeModels
 };

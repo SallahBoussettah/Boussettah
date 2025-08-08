@@ -448,17 +448,40 @@ function ContactForm() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    setIsSubmitting(false);
-    setSubmitStatus("success");
+      const result = await response.json();
 
-    // Reset form after success
-    setTimeout(() => {
-      setFormData({ name: "", email: "", subject: "", message: "" });
-      setSubmitStatus("idle");
-    }, 3000);
+      if (response.ok && result.success) {
+        setSubmitStatus("success");
+        // Reset form after success
+        setTimeout(() => {
+          setFormData({ name: "", email: "", subject: "", message: "" });
+          setSubmitStatus("idle");
+        }, 3000);
+      } else {
+        console.error('Form submission failed:', result);
+        setSubmitStatus("error");
+        setTimeout(() => {
+          setSubmitStatus("idle");
+        }, 5000);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitStatus("error");
+      setTimeout(() => {
+        setSubmitStatus("idle");
+      }, 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -569,6 +592,17 @@ function ContactForm() {
               >
                 <CheckCircle className="w-5 h-5 mr-2" />
                 Message Sent!
+              </motion.div>
+            ) : submitStatus === "error" ? (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="flex items-center"
+              >
+                <AlertCircle className="w-5 h-5 mr-2" />
+                Failed to Send
               </motion.div>
             ) : (
               <motion.div

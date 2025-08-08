@@ -20,6 +20,8 @@ import {
   Palette,
   ExternalLink,
   Github,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1376,6 +1378,65 @@ function ContactSection() {
     "dev@boussettahsalah.online"
   );
 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          subject: `Portfolio Contact: ${formData.name}`,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setSubmitStatus("success");
+        setTimeout(() => {
+          setFormData({ name: "", email: "", message: "" });
+          setSubmitStatus("idle");
+        }, 3000);
+      } else {
+        console.error('Form submission failed:', result);
+        setSubmitStatus("error");
+        setTimeout(() => {
+          setSubmitStatus("idle");
+        }, 5000);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitStatus("error");
+      setTimeout(() => {
+        setSubmitStatus("idle");
+      }, 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section id="contact" className="py-32 px-6 text-black dark:text-white">
       <div className="max-w-4xl mx-auto text-center">
@@ -1396,7 +1457,8 @@ function ContactSection() {
           development, game development, or digital art, let's collaborate.
         </AnimatedText>
 
-        <motion.div
+        <motion.form
+          onSubmit={handleSubmit}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
@@ -1404,28 +1466,68 @@ function ContactSection() {
           className="max-w-md mx-auto space-y-6"
         >
           <Input
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
             placeholder="Your Name"
+            required
             className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
           />
           <Input
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleInputChange}
             placeholder="Your Email"
+            required
             className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
           />
           <Textarea
+            name="message"
+            value={formData.message}
+            onChange={handleInputChange}
             placeholder="Tell me about your project"
+            required
             className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 min-h-32"
           />
-          <Button className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 py-6 text-lg font-medium group">
-            Send Message
-            <motion.div
-              className="ml-2"
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              <ArrowUpRight className="w-5 h-5" />
-            </motion.div>
+          <Button 
+            type="submit"
+            disabled={isSubmitting || submitStatus === "success"}
+            className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 py-6 text-lg font-medium group disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full mr-2"
+                />
+                Sending...
+              </>
+            ) : submitStatus === "success" ? (
+              <>
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Message Sent!
+              </>
+            ) : submitStatus === "error" ? (
+              <>
+                <AlertCircle className="w-5 h-5 mr-2" />
+                Failed to Send
+              </>
+            ) : (
+              <>
+                Send Message
+                <motion.div
+                  className="ml-2"
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <ArrowUpRight className="w-5 h-5" />
+                </motion.div>
+              </>
+            )}
           </Button>
-        </motion.div>
+        </motion.form>
 
         <motion.div
           initial={{ opacity: 0 }}
