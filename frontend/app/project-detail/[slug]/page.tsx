@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { projectsAPI, Project } from "@/lib/api";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -391,177 +392,52 @@ function Navigation() {
   );
 }
 
-// Project data
-const projectsData = {
-  "ecommerce-platform": {
-    title: "E-Commerce Platform",
-    subtitle: "Full-Stack Shopping Solution",
-    description:
-      "A comprehensive e-commerce platform built with modern technologies, featuring advanced user authentication, secure payment processing, real-time inventory management, and a powerful admin dashboard. The platform supports multiple payment methods, automated email notifications, and responsive design for optimal user experience across all devices.",
-    longDescription:
-      "This e-commerce platform represents a complete solution for online retail businesses. Built with React and Node.js, it features a microservices architecture that ensures scalability and maintainability. The platform includes advanced features such as real-time inventory tracking, automated order processing, customer analytics, and a comprehensive admin panel for managing products, orders, and customers.",
-    technologies: [
-      "React",
-      "Node.js",
-      "MongoDB",
-      "Stripe",
-      "JWT",
-      "Redux",
-      "Express",
-      "Socket.io",
-    ],
-    category: "web",
-    year: "2025",
-    status: "completed",
-    liveUrl: "https://example.com",
-    githubUrl: "https://github.com/example",
-    stars: "45",
-    featured: true,
-    images: [
-      "/placeholder.svg?height=600&width=800&text=Homepage",
-      "/placeholder.svg?height=600&width=800&text=Product+Page",
-      "/placeholder.svg?height=600&width=800&text=Shopping+Cart",
-      "/placeholder.svg?height=600&width=800&text=Admin+Dashboard",
-    ],
-    features: [
-      "User Authentication & Authorization",
-      "Product Catalog Management",
-      "Shopping Cart & Checkout",
-      "Payment Processing (Stripe)",
-      "Order Management System",
-      "Admin Dashboard",
-      "Real-time Inventory Tracking",
-      "Email Notifications",
-      "Responsive Design",
-      "Search & Filtering",
-    ],
-    challenges: [
-      "Implementing secure payment processing",
-      "Real-time inventory synchronization",
-      "Optimizing database queries for large product catalogs",
-      "Creating a scalable architecture",
-    ],
-    learnings: [
-      "Advanced React patterns and state management",
-      "Microservices architecture design",
-      "Payment gateway integration",
-      "Database optimization techniques",
-    ],
-  },
-  "pixel-adventure": {
-    title: "Pixel Adventure",
-    subtitle: "2D Platformer Game",
-    description:
-      "An engaging 2D platformer game featuring retro-style pixel art graphics, smooth character controls, multiple challenging levels, and various power-ups. Built with Unity and C#, the game includes enemy AI, physics-based gameplay, and an immersive soundtrack.",
-    longDescription:
-      "Pixel Adventure is a love letter to classic 2D platformers, combining nostalgic pixel art aesthetics with modern game design principles. The game features tight controls, challenging but fair level design, and a progression system that keeps players engaged. Each level introduces new mechanics and challenges, culminating in epic boss battles.",
-    technologies: [
-      "Unity",
-      "C#",
-      "2D Physics",
-      "Animation",
-      "Audio",
-      "Tilemap",
-    ],
-    category: "game",
-    year: "2025",
-    status: "completed",
-    downloads: "5K+",
-    featured: true,
-    images: [
-      "/placeholder.svg?height=600&width=800&text=Game+Menu",
-      "/placeholder.svg?height=600&width=800&text=Level+1",
-      "/placeholder.svg?height=600&width=800&text=Boss+Battle",
-      "/placeholder.svg?height=600&width=800&text=Power+Ups",
-    ],
-    features: [
-      "20+ Challenging Levels",
-      "Smooth Character Controls",
-      "Enemy AI System",
-      "Power-up System",
-      "Boss Battles",
-      "Pixel Art Graphics",
-      "Dynamic Soundtrack",
-      "Achievement System",
-      "Save/Load System",
-      "Multiple Difficulty Modes",
-    ],
-    challenges: [
-      "Creating responsive character controls",
-      "Implementing efficient enemy AI",
-      "Optimizing performance for mobile devices",
-      "Balancing game difficulty",
-    ],
-    learnings: [
-      "Unity 2D development best practices",
-      "Game physics and collision detection",
-      "Audio implementation and mixing",
-      "Player experience and game feel",
-    ],
-  },
-  "fitness-tracker": {
-    title: "Fitness Tracker",
-    subtitle: "Health & Wellness App",
-    description:
-      "A comprehensive fitness tracking mobile application built with React Native. Features include workout planning, nutrition tracking, progress analytics, social features, and integration with health APIs for a complete wellness experience.",
-    longDescription:
-      "The Fitness Tracker app is designed to be your complete wellness companion. It combines workout tracking, nutrition monitoring, and social features to create a comprehensive health platform. The app uses machine learning to provide personalized recommendations and integrates with various health APIs to give users a complete picture of their fitness journey.",
-    technologies: [
-      "React Native",
-      "Expo",
-      "Firebase",
-      "Charts",
-      "HealthKit",
-      "AsyncStorage",
-    ],
-    category: "mobile",
-    year: "2025",
-    status: "completed",
-    downloads: "2K+",
-    images: [
-      "/placeholder.svg?height=800&width=400&text=Dashboard",
-      "/placeholder.svg?height=800&width=400&text=Workout+Tracker",
-      "/placeholder.svg?height=800&width=400&text=Nutrition+Log",
-      "/placeholder.svg?height=800&width=400&text=Progress+Charts",
-    ],
-    features: [
-      "Workout Planning & Tracking",
-      "Nutrition Logging",
-      "Progress Analytics",
-      "Social Features",
-      "Health API Integration",
-      "Custom Exercise Library",
-      "Goal Setting & Tracking",
-      "Offline Mode Support",
-      "Push Notifications",
-      "Data Export",
-    ],
-    challenges: [
-      "Integrating with multiple health APIs",
-      "Creating smooth animations on mobile",
-      "Implementing offline data synchronization",
-      "Optimizing battery usage",
-    ],
-    learnings: [
-      "React Native development patterns",
-      "Mobile app performance optimization",
-      "Health data privacy considerations",
-      "Cross-platform development challenges",
-    ],
-  },
-};
+
 
 // Project Detail Page Component
 export default function ProjectDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const project = projectsData[slug as keyof typeof projectsData];
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!project) {
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        setLoading(true);
+        const projectData = await projectsAPI.getBySlug(slug);
+        setProject(projectData);
+      } catch (err: any) {
+        console.error('Error fetching project:', err);
+        setError(err.message || 'Project not found');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (slug) {
+      fetchProject();
+    }
+  }, [slug]);
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Project Not Found</h1>
+          <div className="w-8 h-8 border-2 border-slate-300 dark:border-slate-600 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Loading project...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4 text-black dark:text-white">Project Not Found</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">{error || 'The project you are looking for does not exist.'}</p>
           <Link href="/projects">
             <Button>Back to Projects</Button>
           </Link>
@@ -681,7 +557,7 @@ export default function ProjectDetailPage() {
                 transition={{ duration: 0.8, delay: 0.5 }}
                 className="text-slate-600 dark:text-slate-300 leading-relaxed mb-8"
               >
-                {project.longDescription}
+                {project.longDescription || project.description}
               </motion.p>
 
               {/* Project Stats */}
@@ -830,7 +706,7 @@ export default function ProjectDetailPage() {
             Key Features
           </AnimatedText>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {project.features.map((feature, index) => (
+            {(project.features && project.features.length > 0) ? project.features.map((feature, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
@@ -844,7 +720,11 @@ export default function ProjectDetailPage() {
                   {feature}
                 </span>
               </motion.div>
-            ))}
+            )) : (
+              <div className="col-span-full text-center text-slate-500 dark:text-slate-400">
+                <p>Features information will be added soon.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -859,7 +739,7 @@ export default function ProjectDetailPage() {
                 Challenges Overcome
               </AnimatedText>
               <div className="space-y-4">
-                {project.challenges.map((challenge, index) => (
+                {(project.challenges && project.challenges.length > 0) ? project.challenges.map((challenge, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -30 }}
@@ -873,7 +753,11 @@ export default function ProjectDetailPage() {
                       {challenge}
                     </span>
                   </motion.div>
-                ))}
+                )) : (
+                  <div className="text-center text-slate-500 dark:text-slate-400">
+                    <p>Challenges information will be added soon.</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -883,7 +767,7 @@ export default function ProjectDetailPage() {
                 Key Learnings
               </AnimatedText>
               <div className="space-y-4">
-                {project.learnings.map((learning, index) => (
+                {(project.learnings && project.learnings.length > 0) ? project.learnings.map((learning, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: 30 }}
@@ -897,7 +781,11 @@ export default function ProjectDetailPage() {
                       {learning}
                     </span>
                   </motion.div>
-                ))}
+                )) : (
+                  <div className="text-center text-slate-500 dark:text-slate-400">
+                    <p>Learnings information will be added soon.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

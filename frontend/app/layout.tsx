@@ -4,7 +4,6 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import ClientOnly from '@/components/ClientOnly'
-import LoadingSpinner from '@/components/LoadingSpinner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ClientOnly fallback={<LoadingSpinner />}>
+        <ClientOnly>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"

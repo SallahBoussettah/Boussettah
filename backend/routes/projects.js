@@ -242,17 +242,25 @@ router.post('/',
       .isArray()
       .withMessage('Images must be an array'),
     body('githubUrl')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isURL()
       .withMessage('Invalid GitHub URL'),
     body('liveUrl')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isURL()
       .withMessage('Invalid live URL'),
     body('demoUrl')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isURL()
       .withMessage('Invalid demo URL'),
+    body('imageUrl')
+      .optional({ nullable: true, checkFalsy: true })
+      .isURL()
+      .withMessage('Invalid image URL'),
+    body('thumbnailUrl')
+      .optional({ nullable: true, checkFalsy: true })
+      .isURL()
+      .withMessage('Invalid thumbnail URL'),
     body('year')
       .optional()
       .isLength({ min: 4, max: 4 })
@@ -325,13 +333,25 @@ router.put('/:id',
       .isArray()
       .withMessage('Technologies must be an array'),
     body('githubUrl')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isURL()
       .withMessage('Invalid GitHub URL'),
     body('liveUrl')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isURL()
-      .withMessage('Invalid live URL')
+      .withMessage('Invalid live URL'),
+    body('demoUrl')
+      .optional({ nullable: true, checkFalsy: true })
+      .isURL()
+      .withMessage('Invalid demo URL'),
+    body('imageUrl')
+      .optional({ nullable: true, checkFalsy: true })
+      .isURL()
+      .withMessage('Invalid image URL'),
+    body('thumbnailUrl')
+      .optional({ nullable: true, checkFalsy: true })
+      .isURL()
+      .withMessage('Invalid thumbnail URL')
   ],
   async (req, res) => {
     try {
