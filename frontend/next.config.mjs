@@ -9,13 +9,21 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  output: 'standalone',
   async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*',
-      },
-    ]
+    return process.env.NODE_ENV === 'production' 
+      ? [
+          {
+            source: '/api/:path*',
+            destination: 'http://localhost:5000/api/:path*',
+          },
+        ]
+      : [
+          {
+            source: '/api/:path*',
+            destination: 'http://localhost:5000/api/:path*',
+          },
+        ]
   },
 }
 

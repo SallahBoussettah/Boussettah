@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: portfolio_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_production_db_password_here
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./backend/.env.production
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend/uploads:/app/uploads
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./frontend/.env.production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

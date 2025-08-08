@@ -24,7 +24,7 @@ app.use(helmet({
 }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+    ? ['https://boussettahsalah.online', 'https://www.boussettahsalah.online'] 
     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
