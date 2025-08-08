@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
 const artRoutes = require('./routes/art');
 const uploadRoutes = require('./routes/upload');
+const educationRoutes = require('./routes/education');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/art', artRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/education', educationRoutes);
 
 // Serve uploaded files statically with proper headers
 const path = require('path');

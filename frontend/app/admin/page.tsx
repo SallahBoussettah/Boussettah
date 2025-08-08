@@ -44,7 +44,15 @@ import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import ClientOnly from "@/components/ClientOnly";
-import { projectsAPI, Project, artAPI, ArtPiece, uploadAPI } from "@/lib/api";
+import {
+  projectsAPI,
+  Project,
+  artAPI,
+  ArtPiece,
+  uploadAPI,
+  educationAPI,
+  Education,
+} from "@/lib/api";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -199,6 +207,7 @@ function Sidebar({
     { id: "overview", label: "Overview", icon: BarChart3 },
     { id: "projects", label: "Projects", icon: Code },
     { id: "art", label: "Art Gallery", icon: Palette },
+    { id: "education", label: "Education", icon: Calendar },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -1476,9 +1485,9 @@ function ArtTab() {
         category: filterCategory || undefined,
       });
       const artPieces = response?.artPieces || response || [];
-      console.log('Fetched art pieces:', artPieces);
+      console.log("Fetched art pieces:", artPieces);
       // Log image URLs for debugging
-      artPieces.forEach(art => {
+      artPieces.forEach((art) => {
         if (art.imageUrl) {
           console.log(`Art "${art.title}" has image URL:`, art.imageUrl);
         }
@@ -1502,14 +1511,18 @@ function ArtTab() {
 
   const handleImageUpload = async (file: File): Promise<string> => {
     try {
-      console.log('Uploading file:', file.name);
+      console.log("Uploading file:", file.name);
       const response = await uploadAPI.uploadArtImage(file);
-      console.log('Upload response:', response);
-      console.log('Image URL received:', response.imageUrl);
+      console.log("Upload response:", response);
+      console.log("Image URL received:", response.imageUrl);
       return response.imageUrl;
     } catch (error) {
-      console.error('Error uploading image:', error);
-      throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error uploading image:", error);
+      throw new Error(
+        `Failed to upload image: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -1595,7 +1608,7 @@ function ArtTab() {
             }
             // Keep arrays even if empty (but not if they contain only empty strings)
             if (Array.isArray(value)) {
-              return value.length > 0 && value.some(item => item !== "");
+              return value.length > 0 && value.some((item) => item !== "");
             }
             return true;
           })
@@ -1606,7 +1619,7 @@ function ArtTab() {
           finalData.year = finalData.year.toString();
           // Ensure year is exactly 4 digits
           if (!/^\d{4}$/.test(finalData.year)) {
-            throw new Error('Year must be exactly 4 digits');
+            throw new Error("Year must be exactly 4 digits");
           }
         }
 
@@ -1623,12 +1636,13 @@ function ArtTab() {
           finalData.isPublic = Boolean(finalData.isPublic);
         }
 
-        console.log('Sending art data:', finalData); // Debug log
+        console.log("Sending art data:", finalData); // Debug log
 
         await onSave(finalData);
       } catch (error) {
         console.error("Error saving art piece:", error);
-        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error occurred";
         alert(`Error saving art piece: ${errorMessage}`);
       } finally {
         setSaving(false);
@@ -1919,14 +1933,14 @@ function ArtTab() {
 
   const handleSaveArt = async (artData: any) => {
     try {
-      console.log('handleSaveArt called with:', artData); // Debug log
-      console.log('editingArt:', editingArt); // Debug log
-      
+      console.log("handleSaveArt called with:", artData); // Debug log
+      console.log("editingArt:", editingArt); // Debug log
+
       if (editingArt) {
-        console.log('Updating art with ID:', editingArt.id); // Debug log
+        console.log("Updating art with ID:", editingArt.id); // Debug log
         await artAPI.update(editingArt.id, artData);
       } else {
-        console.log('Creating new art piece'); // Debug log
+        console.log("Creating new art piece"); // Debug log
         await artAPI.create(artData);
       }
       await fetchArtPieces();
@@ -1934,7 +1948,8 @@ function ArtTab() {
       setEditingArt(null);
     } catch (error) {
       console.error("Error saving art piece:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
       alert(`Error saving art piece: ${errorMessage}`);
     }
   };
@@ -2165,6 +2180,446 @@ function ArtTab() {
             setEditingArt(null);
           }}
         />
+      )}
+    </div>
+  );
+}
+
+// Education Tab Component
+function EducationTab() {
+  const [education, setEducation] = useState<Education[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingEducation, setEditingEducation] = useState<Education | null>(
+    null
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    fetchEducation();
+  }, []);
+
+  const fetchEducation = async () => {
+    try {
+      setLoading(true);
+      const response = await educationAPI.getAllAdmin();
+      setEducation(response || []);
+    } catch (error) {
+      console.error("Error fetching education:", error);
+      setEducation([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchEducation();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
+
+  const EducationForm = ({
+    education: educationItem,
+    onSave,
+    onCancel,
+  }: {
+    education?: Education | null;
+    onSave: (data: any) => void;
+    onCancel: () => void;
+  }) => {
+    const [formData, setFormData] = useState({
+      degree: educationItem?.degree || "",
+      school: educationItem?.school || "",
+      year: educationItem?.year || "",
+      description: educationItem?.description || "",
+      icon: educationItem?.icon || "GraduationCap",
+      order: educationItem?.order || 0,
+      isActive:
+        educationItem?.isActive !== undefined ? educationItem.isActive : true,
+    });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+
+      try {
+        await onSave(formData);
+      } catch (error) {
+        console.error("Error saving education:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    const iconOptions = [
+      { value: "GraduationCap", label: "Graduation Cap" },
+      { value: "Award", label: "Award" },
+      { value: "Code", label: "Code" },
+      { value: "Palette", label: "Palette" },
+      { value: "Book", label: "Book" },
+      { value: "Certificate", label: "Certificate" },
+    ];
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={onCancel}
+      >
+        <div 
+          className="bg-white dark:bg-black rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="text-2xl font-bold text-black dark:text-white mb-6">
+            {educationItem ? "Edit Education" : "Add New Education"}
+          </h3>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Degree *
+              </label>
+              <Input
+                type="text"
+                value={formData.degree}
+                onChange={(e) =>
+                  setFormData({ ...formData, degree: e.target.value })
+                }
+                placeholder="e.g., Master's in Computer Science"
+                required
+                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                School *
+              </label>
+              <Input
+                type="text"
+                value={formData.school}
+                onChange={(e) =>
+                  setFormData({ ...formData, school: e.target.value })
+                }
+                placeholder="e.g., University of Technology"
+                required
+                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Year *
+              </label>
+              <Input
+                type="text"
+                value={formData.year}
+                onChange={(e) =>
+                  setFormData({ ...formData, year: e.target.value })
+                }
+                placeholder="e.g., 2020 - 2022"
+                required
+                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Icon
+              </label>
+              <select
+                value={formData.icon}
+                onChange={(e) =>
+                  setFormData({ ...formData, icon: e.target.value })
+                }
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-black dark:text-white"
+              >
+                {iconOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Order
+              </label>
+              <Input
+                type="number"
+                value={formData.order}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    order: parseInt(e.target.value) || 0,
+                  })
+                }
+                placeholder="0"
+                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isActive"
+                checked={formData.isActive}
+                onChange={(e) =>
+                  setFormData({ ...formData, isActive: e.target.checked })
+                }
+                className="rounded border-slate-300 dark:border-slate-600"
+              />
+              <label
+                htmlFor="isActive"
+                className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Active
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Description
+            </label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Brief description of the education..."
+              rows={3}
+              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+            />
+          </div>
+
+          <div className="flex space-x-3">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSubmitting ? "Saving..." : educationItem ? "Update" : "Save"}
+            </Button>
+            <Button
+              type="button"
+              onClick={onCancel}
+              variant="outline"
+              className="border-slate-300 dark:border-slate-600"
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+        </div>
+      </motion.div>
+    );
+  };
+
+  const handleSaveEducation = async (educationData: any) => {
+    try {
+      if (editingEducation) {
+        await educationAPI.update(editingEducation.id, educationData);
+        setEditingEducation(null);
+      } else {
+        await educationAPI.create(educationData);
+        setShowAddForm(false);
+      }
+      await fetchEducation();
+    } catch (error: any) {
+      console.error("Error saving education:", error);
+      alert(error.message || "Failed to save education entry");
+      throw error;
+    }
+  };
+
+  const handleEdit = (educationItem: Education) => {
+    setEditingEducation(educationItem);
+    setShowAddForm(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Are you sure you want to delete this education entry?")) {
+      try {
+        await educationAPI.delete(id);
+        await fetchEducation();
+      } catch (error) {
+        console.error("Error deleting education:", error);
+        alert("Failed to delete education entry");
+      }
+    }
+  };
+
+  const filteredEducation = education.filter(
+    (item) =>
+      item.degree.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.school.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.year.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-2xl font-bold text-black dark:text-white">
+          Education Management ({education.length})
+        </h2>
+        <Button
+          onClick={() => setShowAddForm(true)}
+          className="bg-green-500 hover:bg-green-600 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Education
+        </Button>
+      </div>
+
+      {/* Search */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="md:col-span-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search education..."
+              className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-32 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Add/Edit Form */}
+      {(showAddForm || editingEducation) && (
+        <EducationForm
+          education={editingEducation}
+          onSave={handleSaveEducation}
+          onCancel={() => {
+            setShowAddForm(false);
+            setEditingEducation(null);
+          }}
+        />
+      )}
+
+      {/* Education List */}
+      {!loading && (
+        <>
+          {filteredEducation.length === 0 ? (
+            <div className="text-center py-12">
+              <Calendar className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-2">
+                No education entries found
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
+                {searchTerm
+                  ? "Try adjusting your search terms."
+                  : "Add your first education entry to get started."}
+              </p>
+              {!searchTerm && (
+                <Button
+                  onClick={() => setShowAddForm(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Education
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {filteredEducation.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                          <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-black dark:text-white">
+                            {item.degree}
+                          </h3>
+                          <p className="text-slate-600 dark:text-slate-300">
+                            {item.school}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400 mb-3">
+                        <span className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{item.year}</span>
+                        </span>
+                        <span>•</span>
+                        <span>Order: {item.order}</span>
+                        <span>•</span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            item.isActive
+                              ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                              : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200"
+                          }`}
+                        >
+                          {item.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+
+                      {item.description && (
+                        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center space-x-2 ml-4">
+                      <Button
+                        onClick={() => handleEdit(item)}
+                        size="sm"
+                        variant="outline"
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(item.id)}
+                        size="sm"
+                        variant="outline"
+                        className="border-red-300 dark:border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -2418,6 +2873,8 @@ export default function AdminDashboard() {
         return <ProjectsTab />;
       case "art":
         return <ArtTab />;
+      case "education":
+        return <EducationTab />;
       case "settings":
         return <SettingsTab />;
       default:

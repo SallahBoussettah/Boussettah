@@ -2,6 +2,7 @@ const { sequelize } = require('../config/database');
 const Admin = require('./Admin');
 const Project = require('./Project');
 const Art = require('./Art');
+const Education = require('./Education');
 
 // Initialize models and create default admin
 const initializeModels = async () => {
@@ -23,5 +24,6 @@ module.exports = {
   Admin,
   Project,
   Art,
+  Education,
   initializeModels
 };

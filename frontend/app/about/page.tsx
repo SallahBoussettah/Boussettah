@@ -551,32 +551,63 @@ function AboutMeSection() {
 
 // Education Section
 function EducationSection() {
-  const education = [
-    {
-      degree: "Master's in Computer Science",
-      school: "University of Technology",
-      year: "2020 - 2022",
-      description:
-        "Specialized in Software Engineering and Artificial Intelligence. Graduated with honors.",
-      icon: Award,
-    },
-    {
-      degree: "Bachelor's in Information Technology",
-      school: "Institute of Technology",
-      year: "2017 - 2020",
-      description:
-        "Foundation in programming, databases, and system design. Active in coding competitions.",
-      icon: Code,
-    },
-    {
-      degree: "Digital Art Certification",
-      school: "Creative Arts Academy",
-      year: "2019",
-      description:
-        "Comprehensive training in digital illustration, 3D modeling, and visual design principles.",
-      icon: Palette,
-    },
-  ];
+  const [education, setEducation] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEducation = async () => {
+      try {
+        const { educationAPI } = await import('@/lib/api');
+        const data = await educationAPI.getAll();
+        setEducation(data);
+      } catch (error) {
+        console.error('Error fetching education:', error);
+        // Fallback to empty array if API fails
+        setEducation([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEducation();
+  }, []);
+
+  // Icon mapping
+  const getIcon = (iconName: string) => {
+    const iconMap: { [key: string]: any } = {
+      Award,
+      Code,
+      Palette,
+      Calendar,
+      MapPin,
+      Database,
+      Globe,
+      Server,
+      Smartphone,
+      Gamepad2,
+    };
+    return iconMap[iconName] || Award;
+  };
+
+  if (loading) {
+    return (
+      <section className="py-32 px-6 bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mx-auto mb-6"></div>
+              <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded w-64 mx-auto mb-16"></div>
+              <div className="space-y-12">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-48 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-32 px-6 bg-slate-50 dark:bg-slate-900">
@@ -614,7 +645,10 @@ function EducationSection() {
                       transition={{ duration: 0.5 }}
                       className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center"
                     >
-                      <item.icon className="w-6 h-6 text-blue-500" />
+                      {(() => {
+                        const IconComponent = getIcon(item.icon);
+                        return <IconComponent className="w-6 h-6 text-blue-500" />;
+                      })()}
                     </motion.div>
                     <div>
                       <h3 className="text-xl font-bold text-black dark:text-white">

@@ -76,6 +76,19 @@ export interface ArtPiece {
   updatedAt: string;
 }
 
+export interface Education {
+  id: number;
+  degree: string;
+  school: string;
+  year: string;
+  description?: string;
+  icon: 'Award' | 'Code' | 'Palette' | 'Book' | 'Certificate' | 'GraduationCap';
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -454,6 +467,187 @@ export const uploadAPI = {
     }
 
     return response.json();
+  },
+};
+
+// Education API
+export const educationAPI = {
+  getAll: async (): Promise<Education[]> => {
+    const response = await fetch(`${API_BASE_URL}/education`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch education data');
+    }
+    
+    return response.json();
+  },
+
+  getAllAdmin: async (): Promise<Education[]> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/education/admin`, {
+      method: 'GET',
+      headers,
+    });
+    
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch education data');
+    }
+    
+    return response.json();
+  },
+
+  getById: async (id: number): Promise<Education> => {
+    const response = await fetch(`${API_BASE_URL}/education/${id}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch education entry');
+    }
+    
+    return response.json();
+  },
+
+  create: async (educationData: Omit<Education, 'id' | 'createdAt' | 'updatedAt'>): Promise<Education> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/education`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(educationData),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to create education entry' }));
+      throw new Error(errorData.message || 'Failed to create education entry');
+    }
+
+    return response.json();
+  },
+
+  update: async (id: number, educationData: Partial<Omit<Education, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Education> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/education/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(educationData),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to update education entry' }));
+      throw new Error(errorData.message || 'Failed to update education entry');
+    }
+
+    return response.json();
+  },
+
+  delete: async (id: number): Promise<void> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/education/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to delete education entry' }));
+      throw new Error(errorData.message || 'Failed to delete education entry');
+    }
+  },
+
+  reorder: async (educationIds: number[]): Promise<void> => {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/education/reorder`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ educationIds }),
+    });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
+      }
+      throw new Error('Authentication failed');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to reorder education entries' }));
+      throw new Error(errorData.message || 'Failed to reorder education entries');
+    }
   },
 };
 
