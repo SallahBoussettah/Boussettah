@@ -315,13 +315,16 @@ function Navigation() {
                 </motion.div>
               </Link>
             ))}
-            
+
             {/* Developer Button */}
             <Link href="/login">
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 + navItems.length * 0.1, duration: 0.6 }}
+                transition={{
+                  delay: 0.7 + navItems.length * 0.1,
+                  duration: 0.6,
+                }}
                 className="ml-4"
               >
                 <motion.button
@@ -393,7 +396,7 @@ function Navigation() {
                   </motion.div>
                 </Link>
               ))}
-           
+
               {/* Developer Button - Mobile */}
               <Link href="/login">
                 <motion.div
@@ -468,25 +471,16 @@ function ArtHeroSection() {
 
 // Art Filter Component
 function ArtFilter({
-  activeFilter,
-  setActiveFilter,
   viewMode,
   setViewMode,
+  searchTerm,
+  setSearchTerm,
 }: {
-  activeFilter: string;
-  setActiveFilter: (filter: string) => void;
   viewMode: string;
   setViewMode: (mode: string) => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
 }) {
-  const filters = [
-    { name: "All Artwork", value: "all" },
-    { name: "Character Portraits", value: "portrait" },
-    { name: "Full Body", value: "fullbody" },
-    { name: "Action Scenes", value: "action" },
-    { name: "Sketches", value: "sketch" },
-    { name: "Recent Work", value: "recent" },
-  ];
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -496,11 +490,13 @@ function ArtFilter({
       className="mb-16"
     >
       {/* Search and View Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
           <Input
             placeholder="Search artwork..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 bg-white dark:bg-black border-slate-200 dark:border-slate-700"
           />
         </div>
@@ -531,28 +527,6 @@ function ArtFilter({
             <List className="w-5 h-5" />
           </motion.button>
         </div>
-      </div>
-
-      {/* Filter Buttons */}
-      <div className="flex flex-wrap justify-center gap-3">
-        {filters.map((filter, index) => (
-          <motion.button
-            key={filter.value}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.6 }}
-            onClick={() => setActiveFilter(filter.value)}
-            className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-              activeFilter === filter.value
-                ? "bg-black dark:bg-white text-white dark:text-black"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-            }`}
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {filter.name}
-          </motion.button>
-        ))}
       </div>
     </motion.div>
   );
@@ -602,11 +576,11 @@ function ArtCard({
               className="w-full h-full object-cover"
               onError={(e) => {
                 // Fallback to gradient background if image fails to load
-                e.currentTarget.style.display = 'none';
+                e.currentTarget.style.display = "none";
               }}
             />
           ) : null}
-          
+
           {/* Animated background pattern */}
           <motion.div
             className="absolute inset-0 opacity-20"
@@ -734,7 +708,7 @@ function ArtCard({
               {artwork.title}
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-              {artwork.medium || 'Digital Art'}
+              {artwork.medium || "Digital Art"}
             </p>
           </div>
           <div className="text-purple-500 ml-4">
@@ -743,22 +717,24 @@ function ArtCard({
         </div>
 
         <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed text-sm">
-          {artwork.description || 'A beautiful piece of digital art.'}
+          {artwork.description || "A beautiful piece of digital art."}
         </p>
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {(artwork.tags || []).slice(0, 3).map((tag: string, tagIndex: number) => (
-            <motion.span
-              key={tagIndex}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 + tagIndex * 0.05 }}
-              className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-xs font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-            >
-              #{tag}
-            </motion.span>
-          ))}
+          {(artwork.tags || [])
+            .slice(0, 3)
+            .map((tag: string, tagIndex: number) => (
+              <motion.span
+                key={tagIndex}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1 + tagIndex * 0.05 }}
+                className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-xs font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                #{tag}
+              </motion.span>
+            ))}
           {(artwork.tags || []).length > 3 && (
             <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md text-xs font-medium">
               +{(artwork.tags || []).length - 3} more
@@ -779,7 +755,7 @@ function ArtCard({
             </div>
             <div className="flex items-center space-x-1">
               <Calendar className="w-4 h-4" />
-              <span>{artwork.year || '2025'}</span>
+              <span>{artwork.year || "2025"}</span>
             </div>
           </div>
 
@@ -799,20 +775,33 @@ function ArtCard({
 
 // Art Gallery Section
 function ArtGallery() {
-  const [activeFilter, setActiveFilter] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [selectedArt, setSelectedArt] = useState<number | null>(null);
   const [artworks, setArtworks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchArtworks = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/art?limit=50`);
+        const searchParam = searchTerm
+          ? `&search=${encodeURIComponent(searchTerm)}`
+          : "";
+        const response = await fetch(
+          `${
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+          }/art?limit=50${searchParam}`
+        );
         if (response.ok) {
           const data = await response.json();
-          setArtworks(data.artPieces || []);
+          // Sort by creation date (newest first)
+          const sortedArtworks = (data.artPieces || []).sort(
+            (a, b) =>
+              new Date(b.createdAt || b.updatedAt || "").getTime() -
+              new Date(a.createdAt || a.updatedAt || "").getTime()
+          );
+          setArtworks(sortedArtworks);
         } else {
           // Fallback to mock data if API fails
           setArtworks(mockArtworks);
@@ -826,8 +815,13 @@ function ArtGallery() {
       }
     };
 
-    fetchArtworks();
-  }, []);
+    // Debounce search
+    const debounceTimer = setTimeout(() => {
+      fetchArtworks();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
 
   const mockArtworks = [
     {
@@ -988,18 +982,8 @@ function ArtGallery() {
     },
   ];
 
-  const filteredArtworks = loading ? [] : (
-    activeFilter === "all"
-      ? artworks
-      : artworks.filter((artwork) => {
-          if (activeFilter === "portrait") return artwork.category === "Character Portrait";
-          if (activeFilter === "fullbody") return artwork.category === "Character Portrait";
-          if (activeFilter === "action") return artwork.category === "Concept Art";
-          if (activeFilter === "sketch") return artwork.category === "Illustration";
-          if (activeFilter === "recent") return parseInt(artwork.year) >= 2024;
-          return artwork.category === activeFilter;
-        })
-  );
+  // Just show all artworks (already sorted by creation date and filtered by search)
+  const displayedArtworks = loading ? [] : artworks;
 
   return (
     <section className="py-32 px-6">
@@ -1017,10 +1001,10 @@ function ArtGallery() {
         </AnimatedText>
 
         <ArtFilter
-          activeFilter={activeFilter}
-          setActiveFilter={setActiveFilter}
           viewMode={viewMode}
           setViewMode={setViewMode}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
         />
 
         {/* Art Grid */}
@@ -1035,6 +1019,18 @@ function ArtGallery() {
               </div>
             ))}
           </div>
+        ) : displayedArtworks.length === 0 ? (
+          <div className="text-center py-16">
+            <Palette className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-slate-600 dark:text-slate-400 mb-2">
+              {searchTerm ? "No artworks found" : "No artworks available"}
+            </h3>
+            <p className="text-slate-500 dark:text-slate-500">
+              {searchTerm
+                ? `No results found for "${searchTerm}"`
+                : "Check back later for new artwork!"}
+            </p>
+          </div>
         ) : (
           <motion.div
             layout
@@ -1045,16 +1041,20 @@ function ArtGallery() {
             }
           >
             <AnimatePresence mode="wait">
-              {filteredArtworks.map((artwork, index) => (
+              {displayedArtworks.map((artwork, index) => (
                 <motion.div
-                  key={`${artwork.title}-${activeFilter}`}
+                  key={`${artwork.id || artwork.title}-${index}`}
                   layout
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}
                 >
-                  <ArtCard artwork={artwork} index={index} viewMode={viewMode} />
+                  <ArtCard
+                    artwork={artwork}
+                    index={index}
+                    viewMode={viewMode}
+                  />
                 </motion.div>
               ))}
             </AnimatePresence>

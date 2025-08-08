@@ -8,17 +8,22 @@ const { sequelize, initializeModels } = require('./models');
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
 const artRoutes = require('./routes/art');
+const uploadRoutes = require('./routes/upload');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://yourdomain.com'] 
     : ['http://localhost:3000'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Rate limiting
@@ -37,6 +42,18 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/art', artRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Serve uploaded files statically with proper headers
+const path = require('path');
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.NODE_ENV === 'production' 
+    ? 'https://yourdomain.com' 
+    : 'http://localhost:3000');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

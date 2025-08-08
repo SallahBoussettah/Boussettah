@@ -44,7 +44,7 @@ import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import ClientOnly from "@/components/ClientOnly";
-import { projectsAPI, Project, artAPI, ArtPiece } from "@/lib/api";
+import { projectsAPI, Project, artAPI, ArtPiece, uploadAPI } from "@/lib/api";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -1475,7 +1475,15 @@ function ArtTab() {
         search: searchTerm || undefined,
         category: filterCategory || undefined,
       });
-      setArtPieces(response?.artPieces || response || []);
+      const artPieces = response?.artPieces || response || [];
+      console.log('Fetched art pieces:', artPieces);
+      // Log image URLs for debugging
+      artPieces.forEach(art => {
+        if (art.imageUrl) {
+          console.log(`Art "${art.title}" has image URL:`, art.imageUrl);
+        }
+      });
+      setArtPieces(artPieces);
     } catch (error) {
       console.error("Error fetching art pieces:", error);
       setArtPieces([]);
@@ -1493,17 +1501,16 @@ function ArtTab() {
   }, [searchTerm, filterCategory]);
 
   const handleImageUpload = async (file: File): Promise<string> => {
-    // For now, we'll create a placeholder URL
-    // In a real implementation, you'd upload to a cloud service like AWS S3, Cloudinary, etc.
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        // This is a placeholder - in production you'd upload to your image service
-        const imageUrl = `/images/art/${file.name}`;
-        resolve(imageUrl);
-      };
-      reader.readAsDataURL(file);
-    });
+    try {
+      console.log('Uploading file:', file.name);
+      const response = await uploadAPI.uploadArtImage(file);
+      console.log('Upload response:', response);
+      console.log('Image URL received:', response.imageUrl);
+      return response.imageUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const ArtForm = ({
