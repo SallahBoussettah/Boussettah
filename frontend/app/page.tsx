@@ -1024,32 +1024,7 @@ function WorkSection() {
                       />
                     ) : null}
 
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-blue-500/20"
-                      animate={{
-                        rotate: [0, 360],
-                        scale: [1, 1.1, 1],
-                      }}
-                      transition={{
-                        duration: 10 + index,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.div
-                        animate={{
-                          rotate: [0, -360],
-                        }}
-                        transition={{
-                          duration: 8 + index,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
-                      >
-                        <Palette className="w-8 h-8 text-purple-500/50" />
-                      </motion.div>
-                    </div>
+
 
                     {/* Hover overlay with title */}
                     <motion.div
@@ -1112,34 +1087,22 @@ function WorkSection() {
                 </button>
 
                 {/* Art content */}
-                <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 relative">
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-blue-500/20"
-                    animate={{
-                      rotate: [0, 360],
-                      scale: [1, 1.05, 1],
-                    }}
-                    transition={{
-                      duration: 15,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.div
-                      animate={{
-                        rotate: [0, -360],
-                      }}
-                      transition={{
-                        duration: 12,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    >
-                      <Palette className="w-24 h-24 text-purple-500/50" />
-                    </motion.div>
-                  </div>
+                <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative">
+                  {/* Display actual artwork image */}
+                  {featuredArt[selectedArt]?.imageUrl ? (
+                    <img
+                      src={featuredArt[selectedArt].imageUrl}
+                      alt={featuredArt[selectedArt].title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center text-slate-500 dark:text-slate-400">
+                        <div className="text-6xl mb-4">🎨</div>
+                        <p>No image available</p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Floating elements for the modal */}
                   <motion.div
