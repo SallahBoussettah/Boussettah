@@ -9,8 +9,9 @@
     "init-db": "node scripts/init-db.js",
     "migrate": "node scripts/run-migrations.js",
     "seed-projects": "node scripts/seed-projects.js",
+    "seed-art": "node scripts/seed-art.js",
     "reset-password": "node scripts/reset-admin-password.js",
-    "setup": "npm run init-db && npm run migrate && npm run seed-projects",
+    "setup": "npm run init-db && npm run migrate && npm run seed-projects && npm run seed-art",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

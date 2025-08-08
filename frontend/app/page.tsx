@@ -785,30 +785,6 @@ function WorkSection() {
         setFeaturedProjects(response.projects);
       } catch (error) {
         console.error("Error fetching featured projects:", error);
-        // Fallback to mock data if API fails
-        setFeaturedProjects([
-          {
-            title: "E-Commerce Platform",
-            technologies: ["React", "Node.js", "MongoDB"],
-            year: "2025",
-            category: "web",
-            slug: "ecommerce-platform",
-          },
-          {
-            title: "Pixel Adventure",
-            technologies: ["Unity", "C#"],
-            year: "2025",
-            category: "game",
-            slug: "pixel-adventure",
-          },
-          {
-            title: "Fitness Tracker",
-            technologies: ["React Native", "Firebase"],
-            year: "2025",
-            category: "mobile",
-            slug: "fitness-tracker",
-          },
-        ]);
       } finally {
         setLoading(false);
       }
@@ -829,17 +805,54 @@ function WorkSection() {
 
   // Art gallery state
   const [selectedArt, setSelectedArt] = useState<number | null>(null);
+  const [featuredArt, setFeaturedArt] = useState<any[]>([]);
+  const [artLoading, setArtLoading] = useState(true);
 
-  const artPieces = [
-    "Abstract Dreams",
-    "Digital Landscape",
-    "Neon Nights",
-    "Cosmic Journey",
-    "Urban Pulse",
-    "Nature's Code",
-    "Future Vision",
-    "Color Symphony",
-  ];
+  useEffect(() => {
+    const fetchFeaturedArt = async () => {
+      try {
+        setArtLoading(true);
+        const response = await fetch(
+          `${
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+          }/art?featured=true&limit=8`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setFeaturedArt(data.artPieces || []);
+        } else {
+          // Fallback to mock data if API fails
+          setFeaturedArt([
+            { title: "Abstract Dreams", slug: "abstract-dreams" },
+            { title: "Digital Landscape", slug: "digital-landscape" },
+            { title: "Neon Nights", slug: "neon-nights" },
+            { title: "Cosmic Journey", slug: "cosmic-journey" },
+            { title: "Urban Pulse", slug: "urban-pulse" },
+            { title: "Nature's Code", slug: "natures-code" },
+            { title: "Future Vision", slug: "future-vision" },
+            { title: "Color Symphony", slug: "color-symphony" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching featured art:", error);
+        // Fallback to mock data
+        setFeaturedArt([
+          { title: "Abstract Dreams", slug: "abstract-dreams" },
+          { title: "Digital Landscape", slug: "digital-landscape" },
+          { title: "Neon Nights", slug: "neon-nights" },
+          { title: "Cosmic Journey", slug: "cosmic-journey" },
+          { title: "Urban Pulse", slug: "urban-pulse" },
+          { title: "Nature's Code", slug: "natures-code" },
+          { title: "Future Vision", slug: "future-vision" },
+          { title: "Color Symphony", slug: "color-symphony" },
+        ]);
+      } finally {
+        setArtLoading(false);
+      }
+    };
+
+    fetchFeaturedArt();
+  }, []);
 
   return (
     <section id="projects" className="py-32 px-6">
@@ -977,65 +990,87 @@ function WorkSection() {
         </AnimatedText>
 
         <div id="art" className="mt-20">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {artPieces.map((title, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.05 }}
-                className="group cursor-pointer"
-                onClick={() => setSelectedArt(index)}
-              >
-                <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-xl relative overflow-hidden">
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-blue-500/20"
-                    animate={{
-                      rotate: [0, 360],
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: 10 + index,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
+          {artLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="aspect-square bg-slate-200 dark:bg-slate-800 rounded-xl mb-4"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredArt.map((artPiece, index) => (
+                <motion.div
+                  key={artPiece.id || index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.05 }}
+                  className="group cursor-pointer"
+                  onClick={() => setSelectedArt(index)}
+                >
+                  <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-xl relative overflow-hidden">
+                    {artPiece.imageUrl ? (
+                      <img
+                        src={artPiece.imageUrl}
+                        alt={artPiece.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to gradient background if image fails to load
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : null}
+
                     <motion.div
+                      className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-blue-500/20"
                       animate={{
-                        rotate: [0, -360],
+                        rotate: [0, 360],
+                        scale: [1, 1.1, 1],
                       }}
                       transition={{
-                        duration: 8 + index,
+                        duration: 10 + index,
                         repeat: Infinity,
-                        ease: "linear",
+                        ease: "easeInOut",
                       }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        animate={{
+                          rotate: [0, -360],
+                        }}
+                        transition={{
+                          duration: 8 + index,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                      >
+                        <Palette className="w-8 h-8 text-purple-500/50" />
+                      </motion.div>
+                    </div>
+
+                    {/* Hover overlay with title */}
+                    <motion.div
+                      className="absolute inset-0 bg-black/0 group-hover:bg-black/70 dark:group-hover:bg-black/70 transition-all duration-300 flex items-center justify-center"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 1 }}
                     >
-                      <Palette className="w-8 h-8 text-purple-500/50" />
+                      <motion.h3
+                        className="text-white text-xl font-bold text-center px-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileHover={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {artPiece.title}
+                      </motion.h3>
                     </motion.div>
                   </div>
-
-                  {/* Hover overlay with title */}
-                  <motion.div
-                    className="absolute inset-0 bg-black/0 group-hover:bg-black/70 dark:group-hover:bg-black/70 transition-all duration-300 flex items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                  >
-                    <motion.h3
-                      className="text-white text-xl font-bold text-center px-4"
-                      initial={{ opacity: 0, y: 20 }}
-                      whileHover={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {title}
-                    </motion.h3>
-                  </motion.div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Art Modal */}
@@ -1155,7 +1190,7 @@ function WorkSection() {
                     transition={{ delay: 0.2 }}
                     className="text-3xl font-bold mb-4 text-black dark:text-white"
                   >
-                    {artPieces[selectedArt]}
+                    {featuredArt[selectedArt]?.title || "Artwork"}
                   </motion.h2>
                   <motion.p
                     initial={{ opacity: 0, y: 20 }}
@@ -1163,11 +1198,7 @@ function WorkSection() {
                     transition={{ delay: 0.3 }}
                     className="text-slate-600 dark:text-slate-300 leading-relaxed"
                   >
-                    A stunning digital art piece that explores the intersection
-                    of technology and creativity. This work represents the
-                    endless possibilities of digital expression and the beauty
-                    that emerges from the fusion of artistic vision and
-                    technical skill.
+                    {featuredArt[selectedArt]?.description || "A stunning digital art piece that explores the intersection of technology and creativity. This work represents the endless possibilities of digital expression and the beauty that emerges from the fusion of artistic vision and technical skill."}
                   </motion.p>
 
                   <motion.div
@@ -1176,11 +1207,11 @@ function WorkSection() {
                     transition={{ delay: 0.4 }}
                     className="flex items-center gap-4 mt-6 text-sm text-slate-500 dark:text-slate-400"
                   >
-                    <span>Digital Art</span>
+                    <span>{featuredArt[selectedArt]?.category || "Digital Art"}</span>
                     <span>•</span>
-                    <span>2025</span>
+                    <span>{featuredArt[selectedArt]?.year || "2025"}</span>
                     <span>•</span>
-                    <span>Mixed Media</span>
+                    <span>{featuredArt[selectedArt]?.medium || "Mixed Media"}</span>
                   </motion.div>
                 </div>
               </motion.div>

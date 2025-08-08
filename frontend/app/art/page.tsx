@@ -591,9 +591,22 @@ function ArtCard({
       <div className="relative overflow-hidden">
         <div
           className={`${
-            viewMode === "masonry" ? artwork.aspectClass : "aspect-square"
-          } bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative`}
+            viewMode === "masonry" ? "aspect-[4/5]" : "aspect-square"
+          } bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative overflow-hidden`}
         >
+          {/* Display actual image if available */}
+          {artwork.imageUrl ? (
+            <img
+              src={artwork.imageUrl}
+              alt={artwork.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to gradient background if image fails to load
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : null}
+          
           {/* Animated background pattern */}
           <motion.div
             className="absolute inset-0 opacity-20"
@@ -721,7 +734,7 @@ function ArtCard({
               {artwork.title}
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-              {artwork.medium}
+              {artwork.medium || 'Digital Art'}
             </p>
           </div>
           <div className="text-purple-500 ml-4">
@@ -730,12 +743,12 @@ function ArtCard({
         </div>
 
         <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed text-sm">
-          {artwork.description}
+          {artwork.description || 'A beautiful piece of digital art.'}
         </p>
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {artwork.tags.slice(0, 3).map((tag: string, tagIndex: number) => (
+          {(artwork.tags || []).slice(0, 3).map((tag: string, tagIndex: number) => (
             <motion.span
               key={tagIndex}
               initial={{ opacity: 0, scale: 0.8 }}
@@ -746,9 +759,9 @@ function ArtCard({
               #{tag}
             </motion.span>
           ))}
-          {artwork.tags.length > 3 && (
+          {(artwork.tags || []).length > 3 && (
             <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md text-xs font-medium">
-              +{artwork.tags.length - 3} more
+              +{(artwork.tags || []).length - 3} more
             </span>
           )}
         </div>
@@ -762,11 +775,11 @@ function ArtCard({
             </div>
             <div className="flex items-center space-x-1">
               <Eye className="w-4 h-4" />
-              <span>{artwork.views}</span>
+              <span>{artwork.views || 0}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Calendar className="w-4 h-4" />
-              <span>{artwork.year}</span>
+              <span>{artwork.year || '2025'}</span>
             </div>
           </div>
 
@@ -789,8 +802,34 @@ function ArtGallery() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [selectedArt, setSelectedArt] = useState<number | null>(null);
+  const [artworks, setArtworks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const artworks = [
+  useEffect(() => {
+    const fetchArtworks = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/art?limit=50`);
+        if (response.ok) {
+          const data = await response.json();
+          setArtworks(data.artPieces || []);
+        } else {
+          // Fallback to mock data if API fails
+          setArtworks(mockArtworks);
+        }
+      } catch (error) {
+        console.error("Error fetching artworks:", error);
+        // Fallback to mock data
+        setArtworks(mockArtworks);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtworks();
+  }, []);
+
+  const mockArtworks = [
     {
       title: "Sakura Warrior",
       medium: "Paint Studio on PC",
@@ -949,10 +988,18 @@ function ArtGallery() {
     },
   ];
 
-  const filteredArtworks =
+  const filteredArtworks = loading ? [] : (
     activeFilter === "all"
       ? artworks
-      : artworks.filter((artwork) => artwork.category === activeFilter);
+      : artworks.filter((artwork) => {
+          if (activeFilter === "portrait") return artwork.category === "Character Portrait";
+          if (activeFilter === "fullbody") return artwork.category === "Character Portrait";
+          if (activeFilter === "action") return artwork.category === "Concept Art";
+          if (activeFilter === "sketch") return artwork.category === "Illustration";
+          if (activeFilter === "recent") return parseInt(artwork.year) >= 2024;
+          return artwork.category === activeFilter;
+        })
+  );
 
   return (
     <section className="py-32 px-6">
@@ -977,29 +1024,42 @@ function ArtGallery() {
         />
 
         {/* Art Grid */}
-        <motion.div
-          layout
-          className={
-            viewMode === "grid"
-              ? "grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-              : "columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6"
-          }
-        >
-          <AnimatePresence mode="wait">
-            {filteredArtworks.map((artwork, index) => (
-              <motion.div
-                key={`${artwork.title}-${activeFilter}`}
-                layout
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-              >
-                <ArtCard artwork={artwork} index={index} viewMode={viewMode} />
-              </motion.div>
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {[...Array(12)].map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="aspect-square bg-slate-200 dark:bg-slate-800 rounded-2xl mb-4"></div>
+                <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded mb-2"></div>
+                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded mb-2 w-3/4"></div>
+                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
+              </div>
             ))}
-          </AnimatePresence>
-        </motion.div>
+          </div>
+        ) : (
+          <motion.div
+            layout
+            className={
+              viewMode === "grid"
+                ? "grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                : "columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6"
+            }
+          >
+            <AnimatePresence mode="wait">
+              {filteredArtworks.map((artwork, index) => (
+                <motion.div
+                  key={`${artwork.title}-${activeFilter}`}
+                  layout
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                >
+                  <ArtCard artwork={artwork} index={index} viewMode={viewMode} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
 
         {/* Load More Button */}
         <motion.div
