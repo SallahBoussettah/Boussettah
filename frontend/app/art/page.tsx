@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { title } from "process";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -563,23 +564,26 @@ function ArtCard({
     >
       {/* Art Image */}
       <div className="relative overflow-hidden">
-        <div
-          className={`${
-            viewMode === "masonry" ? "aspect-[4/5]" : "aspect-square"
-          } bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative overflow-hidden`}
-        >
+        <div className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative overflow-hidden rounded-lg">
           {/* Display actual image if available */}
           {artwork.imageUrl ? (
             <img
               src={artwork.imageUrl}
               alt={artwork.title}
-              className="w-full h-full object-cover"
+              className="w-full h-auto block"
               onError={(e) => {
                 // Fallback to gradient background if image fails to load
                 e.currentTarget.style.display = "none";
               }}
             />
-          ) : null}
+          ) : (
+            <div className="aspect-square flex items-center justify-center">
+              <div className="text-center text-slate-500 dark:text-slate-400">
+                <div className="text-4xl mb-2">🎨</div>
+                <p className="text-sm">No image</p>
+              </div>
+            </div>
+          )}
 
           {/* Animated background pattern */}
           <motion.div
@@ -598,42 +602,19 @@ function ArtCard({
             className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-500 flex items-center justify-center"
             whileHover={{ backgroundColor: "rgba(0,0,0,0.6)" }}
           >
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              whileHover={{ scale: 1, opacity: 1 }}
-              className="flex space-x-4"
-            >
-              <motion.button
-                className="w-14 h-14 bg-white dark:bg-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+            {viewMode === "grid" ? (
+              /* Grid Mode - Show title on hover */
+              <motion.div
+                className="text-white text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                initial={{ y: 20 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <Eye className="w-6 h-6 text-black dark:text-white" />
-              </motion.button>
-
-              <motion.button
-                onClick={handleLike}
-                className="w-14 h-14 bg-white dark:bg-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Heart
-                  className={`w-6 h-6 ${
-                    isLiked
-                      ? "text-red-500 fill-current"
-                      : "text-black dark:text-white"
-                  }`}
-                />
-              </motion.button>
-
-              <motion.button
-                className="w-14 h-14 bg-white dark:bg-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Download className="w-6 h-6 text-black dark:text-white" />
-              </motion.button>
-            </motion.div>
+                <h3 className="text-white text-xl font-bold text-center px-4">
+                  {artwork.title}
+                </h3>
+              </motion.div>
+            ) : null}
           </motion.div>
 
           {/* Art preview with floating elements */}
@@ -657,20 +638,22 @@ function ArtCard({
           />
         </div>
 
-        {/* Category Badge */}
-        <div className="absolute top-4 left-4">
-          <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: index * 0.1 + 0.3 }}
-            className="px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-black/90 text-black dark:text-white border border-white/20 dark:border-black/20"
-          >
-            {artwork.category}
-          </motion.span>
-        </div>
+        {/* Category Badge - Only show in list mode */}
+        {viewMode !== "grid" && (
+          <div className="absolute top-4 left-4">
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: index * 0.1 + 0.3 }}
+              className="px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-black/90 text-black dark:text-white border border-white/20 dark:border-black/20"
+            >
+              {artwork.category}
+            </motion.span>
+          </div>
+        )}
 
-        {/* Featured Badge */}
-        {artwork.featured && (
+        {/* Featured Badge - Only show in list mode */}
+        {viewMode !== "grid" && artwork.featured && (
           <div className="absolute top-4 right-4">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
@@ -685,46 +668,47 @@ function ArtCard({
       </div>
 
       {/* Art Content */}
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-black dark:text-white group-hover:text-slate-600 dark:group-hover:text-slate-400 transition-colors cursor-pointer mb-1">
-              {artwork.title}
-            </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-              {artwork.medium || "Digital Art"}
-            </p>
+      {viewMode === "grid" ? null : (
+        <div className="p-6">
+          {/* List Mode - Full Details */}
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-black dark:text-white group-hover:text-slate-600 dark:group-hover:text-slate-400 transition-colors cursor-pointer mb-1">
+                {artwork.title}
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                {artwork.medium || "Digital Art"}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed text-sm">
-          {artwork.description || "A beautiful piece of digital art."}
-        </p>
+          <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed text-sm">
+            {artwork.description || "A beautiful piece of digital art."}
+          </p>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {(artwork.tags || [])
-            .slice(0, 3)
-            .map((tag: string, tagIndex: number) => (
-              <motion.span
-                key={tagIndex}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 + tagIndex * 0.05 }}
-                className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-xs font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-              >
-                #{tag}
-              </motion.span>
-            ))}
-          {(artwork.tags || []).length > 3 && (
-            <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md text-xs font-medium">
-              +{(artwork.tags || []).length - 3} more
-            </span>
-          )}
-        </div>
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {(artwork.tags || [])
+              .slice(0, 3)
+              .map((tag: string, tagIndex: number) => (
+                <motion.span
+                  key={tagIndex}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 + tagIndex * 0.05 }}
+                  className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-xs font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                >
+                  #{tag}
+                </motion.span>
+              ))}
+            {(artwork.tags || []).length > 3 && (
+              <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md text-xs font-medium">
+                +{(artwork.tags || []).length - 3} more
+              </span>
+            )}
+          </div>
 
-        {/* Stats and Actions */}
-        <div className="flex items-center justify-between">
+          {/* Stats */}
           <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
             <div className="flex items-center space-x-1">
               <Heart className="w-4 h-4" />
@@ -739,17 +723,8 @@ function ArtCard({
               <span>{artwork.year || "2025"}</span>
             </div>
           </div>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center space-x-1 text-slate-600 hover:text-black dark:text-slate-400 dark:hover:text-white font-medium text-sm transition-colors"
-          >
-            <span>View Full</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </motion.button>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }
