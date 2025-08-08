@@ -58,6 +58,7 @@ import {
   Experience,
   techStackAPI,
   TechStack,
+  settingsAPI,
 } from "@/lib/api";
 
 // Theme Toggle Component
@@ -3604,236 +3605,432 @@ function TechStackTab() {
 
 // Settings Tab Component
 function SettingsTab() {
-  const [settings, setSettings] = useState({
-    siteName: "SB. Portfolio",
-    siteDescription: "Software Developer, Game Developer, and Digital Artist",
-    email: "dev@boussettahsalah.online",
-    socialLinks: {
-      github: "https://github.com/SallahBoussettah",
-      linkedin: "https://linkedin.com/in/salahboussettah",
-      twitter: "https://twitter.com/salahboussettah",
-    },
-    seoSettings: {
-      metaTitle: "Salah Eddine Boussettah - Developer & Artist",
-      metaDescription:
-        "Portfolio of Salah Eddine Boussettah - Software Developer, Game Developer, and Digital Artist",
-      keywords: "developer, game development, digital art, web development",
-    },
-  });
+  const [settings, setSettings] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('general');
+  const [hasChanges, setHasChanges] = useState(false);
+  const [originalSettings, setOriginalSettings] = useState<Record<string, any>>({});
 
-  const handleSave = () => {
-    // Here you would typically save to a backend or local storage
-    alert("Settings saved successfully!");
+  const categories = [
+    { id: 'general', label: 'General', icon: Settings },
+    { id: 'contact', label: 'Contact', icon: Users },
+    { id: 'social', label: 'Social Links', icon: ExternalLink },
+    { id: 'seo', label: 'SEO', icon: Search },
+  ];
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const response = await settingsAPI.getAllSettings();
+      if (response.success) {
+        setSettings(response.settings);
+        setOriginalSettings(JSON.parse(JSON.stringify(response.settings)));
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleSettingChange = (category: string, key: string, value: any, field: string = 'value') => {
+    const newSettings = {
+      ...settings,
+      [category]: settings[category]?.map((setting: any) =>
+        setting.key === key ? { ...setting, [field]: value } : setting
+      ) || []
+    };
+    setSettings(newSettings);
+    setHasChanges(true);
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      setSaving(true);
+      
+      // Prepare settings for update
+      const settingsToUpdate: Record<string, any> = {};
+      
+      Object.keys(settings).forEach(category => {
+        settings[category]?.forEach((setting: any) => {
+          const originalSetting = originalSettings[category]?.find((s: any) => s.key === setting.key);
+          if (originalSetting && (
+            originalSetting.value !== setting.value || 
+            originalSetting.isPublic !== setting.isPublic
+          )) {
+            settingsToUpdate[setting.key] = setting.value;
+          }
+        });
+      });
+
+      if (Object.keys(settingsToUpdate).length === 0) {
+        alert('No changes to save');
+        return;
+      }
+
+      // Use individual updates as workaround for route conflict
+      let successful = 0;
+      let failed = 0;
+      const errors: string[] = [];
+
+      for (const [key, value] of Object.entries(settingsToUpdate)) {
+        try {
+          // Find the setting to check if isPublic also changed
+          let currentSetting: any = null;
+          let originalSetting: any = null;
+          
+          Object.keys(settings).forEach(category => {
+            const found = settings[category]?.find((s: any) => s.key === key);
+            if (found) currentSetting = found;
+            
+            const foundOriginal = originalSettings[category]?.find((s: any) => s.key === key);
+            if (foundOriginal) originalSetting = foundOriginal;
+          });
+          
+          const isPublicChanged = currentSetting && originalSetting && 
+            currentSetting.isPublic !== originalSetting.isPublic;
+          
+          await settingsAPI.updateSetting(
+            key, 
+            value, 
+            isPublicChanged ? currentSetting.isPublic : undefined
+          );
+          successful++;
+        } catch (error) {
+          failed++;
+          errors.push(`${key}: ${error instanceof Error ? error.message : 'Update failed'}`);
+        }
+      }
+      
+      if (successful > 0) {
+        alert(`Settings saved successfully! Updated ${successful} settings.${failed > 0 ? ` ${failed} failed.` : ''}`);
+        setHasChanges(false);
+        setOriginalSettings(JSON.parse(JSON.stringify(settings)));
+        
+        if (errors.length > 0) {
+          console.warn('Some settings failed to update:', errors);
+        }
+      } else {
+        alert('Failed to save any settings. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Failed to save settings. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResetSettings = async () => {
+    if (!confirm('Are you sure you want to reset all settings to default? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const response = await settingsAPI.resetToDefault();
+      
+      if (response.success) {
+        alert('Settings reset to default successfully!');
+        await fetchSettings();
+        setHasChanges(false);
+      }
+    } catch (error) {
+      console.error('Error resetting settings:', error);
+      alert('Failed to reset settings. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const renderSettingField = (setting: any) => {
+    const { key, value, type, description, isPublic } = setting;
+    
+    const handleChange = (newValue: any) => {
+      handleSettingChange(activeCategory, key, newValue);
+    };
+
+    const handlePublicChange = (newIsPublic: boolean) => {
+      handleSettingChange(activeCategory, key, newIsPublic, 'isPublic');
+    };
+
+    const fieldProps = {
+      className: "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+    };
+
+    switch (type) {
+      case 'boolean':
+        return (
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              checked={Boolean(value)}
+              onChange={(e) => handleChange(e.target.checked)}
+              className="w-4 h-4 text-blue-600 bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-slate-600 dark:text-slate-400">
+              {description || 'Enable this option'}
+            </span>
+          </div>
+        );
+      
+      case 'number':
+        return (
+          <Input
+            type="number"
+            value={value || ''}
+            onChange={(e) => handleChange(Number(e.target.value))}
+            {...fieldProps}
+          />
+        );
+      
+      case 'array':
+        return (
+          <Textarea
+            value={Array.isArray(value) ? value.join(', ') : ''}
+            onChange={(e) => handleChange(e.target.value.split(',').map(item => item.trim()).filter(Boolean))}
+            placeholder="Separate items with commas"
+            rows={3}
+            {...fieldProps}
+          />
+        );
+      
+      case 'json':
+        return (
+          <Textarea
+            value={typeof value === 'object' ? JSON.stringify(value, null, 2) : value || ''}
+            onChange={(e) => {
+              try {
+                const parsed = JSON.parse(e.target.value);
+                handleChange(parsed);
+              } catch {
+                handleChange(e.target.value);
+              }
+            }}
+            placeholder="Enter valid JSON"
+            rows={4}
+            {...fieldProps}
+          />
+        );
+      
+      default:
+        return key.includes('description') || key.includes('meta_description') ? (
+          <Textarea
+            value={value || ''}
+            onChange={(e) => handleChange(e.target.value)}
+            rows={3}
+            {...fieldProps}
+          />
+        ) : (
+          <Input
+            type={key.includes('email') ? 'email' : key.includes('url') || key.includes('link') ? 'url' : 'text'}
+            value={value || ''}
+            onChange={(e) => handleChange(e.target.value)}
+            {...fieldProps}
+          />
+        );
+    }
+  };
+
+  const formatLabel = (key: string) => {
+    return key
+      .replace(/^[a-z]+_/, '') // Remove category prefix
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Loading settings...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentCategorySettings = settings[activeCategory] || [];
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-black dark:text-white">
-        Settings
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-black dark:text-white">
+          Portfolio Settings
+        </h2>
+        <div className="flex space-x-3">
+          {hasChanges && (
+            <Button
+              onClick={() => {
+                if (confirm('Are you sure you want to discard all changes?')) {
+                  setSettings(JSON.parse(JSON.stringify(originalSettings)));
+                  setHasChanges(false);
+                }
+              }}
+              variant="outline"
+              className="border-slate-300 dark:border-slate-600"
+            >
+              Discard Changes
+            </Button>
+          )}
+          <Button
+            onClick={handleResetSettings}
+            variant="outline"
+            className="border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+            disabled={saving}
+          >
+            Reset to Default
+          </Button>
+        </div>
+      </div>
 
-      {/* General Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
-      >
-        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">
-          General Settings
-        </h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Site Name
-            </label>
-            <Input
-              value={settings.siteName}
-              onChange={(e) =>
-                setSettings({ ...settings, siteName: e.target.value })
-              }
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Site Description
-            </label>
-            <Textarea
-              value={settings.siteDescription}
-              onChange={(e) =>
-                setSettings({ ...settings, siteDescription: e.target.value })
-              }
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Contact Email
-            </label>
-            <Input
-              type="email"
-              value={settings.email}
-              onChange={(e) =>
-                setSettings({ ...settings, email: e.target.value })
-              }
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Category Sidebar */}
+        <div className="lg:col-span-1">
+          <div className="bg-white dark:bg-black p-4 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
+            <h3 className="text-lg font-semibold text-black dark:text-white mb-4">
+              Categories
+            </h3>
+            <nav className="space-y-2">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    activeCategory === category.id
+                      ? 'bg-blue-500 text-white'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <category.icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{category.label}</span>
+                  {settings[category.id]?.length > 0 && (
+                    <span className="ml-auto text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full">
+                      {settings[category.id].length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
           </div>
         </div>
-      </motion.div>
 
-      {/* Social Links */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
-      >
-        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">
-          Social Links
-        </h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              GitHub URL
-            </label>
-            <Input
-              value={settings.socialLinks.github}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  socialLinks: {
-                    ...settings.socialLinks,
-                    github: e.target.value,
-                  },
-                })
-              }
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              LinkedIn URL
-            </label>
-            <Input
-              value={settings.socialLinks.linkedin}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  socialLinks: {
-                    ...settings.socialLinks,
-                    linkedin: e.target.value,
-                  },
-                })
-              }
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Twitter URL
-            </label>
-            <Input
-              value={settings.socialLinks.twitter}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  socialLinks: {
-                    ...settings.socialLinks,
-                    twitter: e.target.value,
-                  },
-                })
-              }
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
-        </div>
-      </motion.div>
+        {/* Settings Content */}
+        <div className="lg:col-span-3">
+          <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-black dark:text-white">
+                {categories.find(c => c.id === activeCategory)?.label} Settings
+              </h3>
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                {currentCategorySettings.length} settings
+              </span>
+            </div>
 
-      {/* SEO Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white dark:bg-black p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700"
-      >
-        <h3 className="text-xl font-semibold text-black dark:text-white mb-6">
-          SEO Settings
-        </h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Meta Title
-            </label>
-            <Input
-              value={settings.seoSettings.metaTitle}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  seoSettings: {
-                    ...settings.seoSettings,
-                    metaTitle: e.target.value,
-                  },
-                })
-              }
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Meta Description
-            </label>
-            <Textarea
-              value={settings.seoSettings.metaDescription}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  seoSettings: {
-                    ...settings.seoSettings,
-                    metaDescription: e.target.value,
-                  },
-                })
-              }
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Keywords
-            </label>
-            <Input
-              value={settings.seoSettings.keywords}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  seoSettings: {
-                    ...settings.seoSettings,
-                    keywords: e.target.value,
-                  },
-                })
-              }
-              placeholder="Separate keywords with commas"
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-            />
-          </div>
+            {currentCategorySettings.length === 0 ? (
+              <div className="text-center py-12">
+                <Settings className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                <p className="text-slate-500 dark:text-slate-400">
+                  No settings found in this category
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {currentCategorySettings.map((setting: any) => (
+                  <div key={setting.key} className="space-y-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {formatLabel(setting.key)}
+                        {!setting.isEditable && (
+                          <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+                            (Read-only)
+                          </span>
+                        )}
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                          {setting.type}
+                        </span>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={setting.isPublic}
+                            onChange={(e) => handleSettingChange(activeCategory, setting.key, e.target.checked, 'isPublic')}
+                            disabled={!setting.isEditable}
+                            className="w-4 h-4 text-blue-600 bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            Public
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {setting.description && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {setting.description}
+                      </p>
+                    )}
+                    
+                    <div className={setting.isEditable ? '' : 'opacity-50 pointer-events-none'}>
+                      {renderSettingField(setting)}
+                    </div>
+                    
+                    <div className="text-xs text-slate-400">
+                      {setting.isPublic ? (
+                        <span className="text-green-600 dark:text-green-400">
+                          ✓ Visible on website
+                        </span>
+                      ) : (
+                        <span className="text-orange-600 dark:text-orange-400">
+                          ⚠ Admin only (not visible on website)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Save Button */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="flex justify-end"
-      >
-        <Button
-          onClick={handleSave}
-          className="bg-green-500 hover:bg-green-600 text-white px-8"
+      {hasChanges && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-8 right-8 z-50"
         >
-          <Save className="w-4 h-4 mr-2" />
-          Save Settings
-        </Button>
-      </motion.div>
+          <Button
+            onClick={handleSaveSettings}
+            disabled={saving}
+            className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 shadow-lg"
+          >
+            {saving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 }

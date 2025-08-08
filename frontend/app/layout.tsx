@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { SettingsProvider } from '@/contexts/SettingsContext'
 import ClientOnly from '@/components/ClientOnly'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -28,9 +29,11 @@ export default function RootLayout({
             enableSystem={false}
             disableTransitionOnChange={false}
           >
-            <AuthProvider>
-              {children}
-            </AuthProvider>
+            <SettingsProvider>
+              <AuthProvider>
+                {children}
+              </AuthProvider>
+            </SettingsProvider>
           </ThemeProvider>
         </ClientOnly>
       </body>

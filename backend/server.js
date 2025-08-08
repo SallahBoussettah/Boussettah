@@ -12,6 +12,7 @@ const uploadRoutes = require('./routes/upload');
 const educationRoutes = require('./routes/education');
 const experienceRoutes = require('./routes/experience');
 const techStackRoutes = require('./routes/techstack');
+const settingsRoutes = require('./routes/settings');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,6 +50,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/education', educationRoutes);
 app.use('/api/experience', experienceRoutes);
 app.use('/api/techstack', techStackRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Serve uploaded files statically with proper headers
 const path = require('path');

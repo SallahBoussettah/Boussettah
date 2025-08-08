@@ -17,6 +17,8 @@ import {
   Github,
   Linkedin,
   Twitter,
+  Instagram,
+  Gamepad2,
   ArrowUpRight,
   Sun,
   Moon,
@@ -28,6 +30,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { useSettings, useSetting } from "@/contexts/SettingsContext";
+import { DiscordIcon } from "@/components/icons/DiscordIcon";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -206,7 +210,7 @@ function Navigation() {
               transition={{ duration: 0.2 }}
             >
               <span className="bg-gradient-to-r from-black via-slate-600 to-black dark:from-white dark:via-slate-400 dark:to-white bg-clip-text text-transparent">
-                SB.
+                {useSetting('site_name', 'SB. Portfolio').split(' ')[0]}.
               </span>
             </motion.div>
           </Link>
@@ -600,23 +604,33 @@ function ContactForm() {
 
 // Contact Info Component
 function ContactInfo() {
+  // Get dynamic settings
+  const contactEmail = useSetting('contact_email', 'dev@boussettahsalah.online');
+  const contactPhone = useSetting('contact_phone', '');
+  const contactLocation = useSetting('contact_location', 'Algeria');
+  const socialGithub = useSetting('social_github', 'https://github.com');
+  const socialLinkedin = useSetting('social_linkedin', 'https://linkedin.com');
+  const socialTwitter = useSetting('social_twitter', 'https://twitter.com');
+  const socialInstagram = useSetting('social_instagram', '');
+  const socialDiscord = useSetting('social_discord', '');
+
   const contactDetails = [
     {
       icon: Mail,
       label: "Email",
-      value: "dev@boussettahsalah.online",
-      href: "mailto:dev@boussettahsalah.online",
+      value: contactEmail,
+      href: `mailto:${contactEmail}`,
     },
-    {
+    ...(contactPhone ? [{
       icon: Phone,
       label: "Phone",
-      value: "+1 (555) 123-4567",
-      href: "tel:+15551234567",
-    },
+      value: contactPhone,
+      href: `tel:${contactPhone}`,
+    }] : []),
     {
       icon: MapPin,
       label: "Location",
-      value: "San Francisco, CA",
+      value: contactLocation,
       href: "#",
     },
   ];
@@ -625,22 +639,40 @@ function ContactInfo() {
     {
       icon: Github,
       label: "GitHub",
-      href: "https://github.com",
+      href: socialGithub,
       color: "hover:text-black dark:hover:text-white",
     },
     {
       icon: Linkedin,
       label: "LinkedIn",
-      href: "https://linkedin.com",
+      href: socialLinkedin,
       color: "hover:text-blue-600",
     },
     {
       icon: Twitter,
       label: "Twitter",
-      href: "https://twitter.com",
+      href: socialTwitter,
       color: "hover:text-blue-400",
     },
-  ];
+    {
+      icon: Instagram,
+      label: "Instagram",
+      href: socialInstagram,
+      color: "hover:text-pink-500",
+    },
+    {
+      icon: DiscordIcon,
+      label: "Discord",
+      href: socialDiscord,
+      color: "hover:text-indigo-500",
+    },
+  ].filter(link => 
+    link.href && 
+    link.href.trim() !== '' && 
+    link.href.startsWith('http') && 
+    !link.href.endsWith('.com') && 
+    !link.href.endsWith('.com/')
+  );
 
   return (
     <div className="space-y-8">
@@ -736,12 +768,52 @@ function ContactInfo() {
   );
 }
 
+// Dynamic SEO Component for Contact Page
+function DynamicContactSEO() {
+  const siteName = useSetting('site_name', 'SB. Portfolio');
+  const ownerName = useSetting('owner_name', 'Salah Eddine Boussettah');
+  const seoMetaDescription = useSetting('seo_meta_description', 'Portfolio of Salah Eddine Boussettah - Software Developer, Game Developer, and Digital Artist');
+  const seoKeywords = useSetting('seo_keywords', ['developer', 'portfolio', 'contact']);
+
+  useEffect(() => {
+    // Update document title
+    document.title = `Contact - ${siteName} | ${ownerName}`;
+    
+    // Update meta description for contact page
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.setAttribute('name', 'description');
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute('content', `Contact ${ownerName} - ${seoMetaDescription}`);
+    
+    // Update meta keywords
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKeywords);
+    }
+    const contactKeywords = Array.isArray(seoKeywords) ? [...seoKeywords, 'contact'] : [seoKeywords, 'contact'];
+    metaKeywords.setAttribute('content', contactKeywords.join(', '));
+    
+  }, [siteName, ownerName, seoMetaDescription, seoKeywords]);
+
+  return null;
+}
+
 export default function ContactPage() {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 300], [0, 50]);
+  
+  // Get dynamic settings
+  const siteTagline = useSetting('site_tagline', 'Creating digital experiences through code and art');
+  const ownerTitle = useSetting('owner_title', 'Full Stack Developer & Digital Artist');
 
   return (
     <div className="bg-white dark:bg-black text-black dark:text-white min-h-screen">
+      <DynamicContactSEO />
       <FloatingElements />
       <Navigation />
       <ThemeToggle />
@@ -781,9 +853,7 @@ export default function ContactPage() {
             delay={0.4}
             className="text-xl text-slate-600 dark:text-slate-300 mb-2 max-w-2xl mx-auto leading-relaxed"
           >
-            Ready to bring your vision to life? Whether it's web development,
-            game development, or digital art, I'm here to help you create
-            something extraordinary.
+            Ready to bring your vision to life? As a {ownerTitle.toLowerCase()}, I'm here to help you {siteTagline.toLowerCase()}.
           </AnimatedText>
         </motion.div>
       </motion.section>

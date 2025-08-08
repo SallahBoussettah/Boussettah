@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { projectsAPI, Project } from "@/lib/api";
+import { useSettings, useSetting } from "@/contexts/SettingsContext";
 
 // Theme Toggle Component
 function ThemeToggle() {
@@ -415,7 +416,7 @@ function Navigation() {
             transition={{ duration: 0.2 }}
           >
             <span className="bg-gradient-to-r from-black via-slate-600 to-black dark:from-white dark:via-slate-400 dark:to-white bg-clip-text text-transparent">
-              SB.
+              {useSetting("site_name", "SB. Portfolio").split(" ")[0]}.
             </span>
           </motion.div>
 
@@ -544,6 +545,21 @@ function HeroSection() {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
 
+  // Get dynamic settings
+  const ownerName = useSetting("owner_name", "SALAH EDDINE");
+  const ownerTitle = useSetting(
+    "owner_title",
+    "Full Stack Developer & Digital Artist"
+  );
+  const siteDescription = useSetting(
+    "site_description",
+    "Software Developer, Game Developer, and Digital Artist"
+  );
+  const socialGithub = useSetting(
+    "social_github",
+    "https://github.com/SallahBoussettah"
+  );
+
   return (
     <motion.section
       id="home"
@@ -566,16 +582,9 @@ function HeroSection() {
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             className="bg-gradient-to-r from-black via-slate-600 to-black dark:from-white dark:via-slate-400 dark:to-white bg-[length:200%_100%] bg-clip-text text-transparent"
           >
-            SALAH EDDINE
+            {ownerName.toUpperCase()}
           </motion.span>
         </motion.h1>
-
-        <motion.h2
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, delay: 0.7, ease: [0.21, 1, 0.81, 1] }}
-          className="text-6xl md:text-7xl font-bold tracking-tight mb-8"
-        ></motion.h2>
 
         <motion.p
           initial={{ opacity: 0, y: 30 }}
@@ -583,7 +592,7 @@ function HeroSection() {
           transition={{ duration: 0.8, delay: 0.9 }}
           className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 mb-12 font-light tracking-wide"
         >
-          Software Developer • Game Developer • Digital Artist
+          {siteDescription}
         </motion.p>
 
         <motion.div
@@ -605,11 +614,7 @@ function HeroSection() {
             </Button>
           </Link>
 
-          <a
-            href="https://github.com/SallahBoussettah"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={socialGithub} target="_blank" rel="noopener noreferrer">
             <Button
               variant="outline"
               className="group border-2 border-black dark:border-white text-black dark:text-white px-8 text-lg font-medium hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 h-[48px] flex items-center"
@@ -655,6 +660,15 @@ function HeroSection() {
 
 // About Section
 function AboutSection() {
+  const siteTagline = useSetting(
+    "site_tagline",
+    "Creating digital experiences through code and art"
+  );
+  const ownerTitle = useSetting(
+    "owner_title",
+    "Full Stack Developer & Digital Artist"
+  );
+
   return (
     <section id="about" className="py-32 px-6 max-w-6xl mx-auto">
       <div className="grid md:grid-cols-2 gap-16 items-center">
@@ -666,16 +680,16 @@ function AboutSection() {
             delay={0.2}
             className="text-4xl md:text-5xl font-bold mb-8 leading-tight text-black dark:text-white"
           >
-            Crafting digital experiences across multiple dimensions
+            {siteTagline}
           </AnimatedText>
           <AnimatedText
             delay={0.4}
             className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-8"
           >
-            I'm a multidisciplinary developer and artist who thrives at the
-            intersection of technology and creativity. With expertise spanning
-            web development, game development, and digital art, I bring a unique
-            perspective to every project.
+            I'm a {ownerTitle.toLowerCase()} who thrives at the intersection of
+            technology and creativity. With expertise spanning web development,
+            game development, and digital art, I bring a unique perspective to
+            every project.
           </AnimatedText>
           <AnimatedText
             delay={0.6}
@@ -1024,8 +1038,6 @@ function WorkSection() {
                       />
                     ) : null}
 
-
-
                     {/* Hover overlay with title */}
                     <motion.div
                       className="absolute inset-0 bg-black/0 group-hover:bg-black/70 dark:group-hover:bg-black/70 transition-all duration-300 flex items-center justify-center"
@@ -1161,7 +1173,8 @@ function WorkSection() {
                     transition={{ delay: 0.3 }}
                     className="text-slate-600 dark:text-slate-300 leading-relaxed"
                   >
-                    {featuredArt[selectedArt]?.description || "A stunning digital art piece that explores the intersection of technology and creativity. This work represents the endless possibilities of digital expression and the beauty that emerges from the fusion of artistic vision and technical skill."}
+                    {featuredArt[selectedArt]?.description ||
+                      "A stunning digital art piece that explores the intersection of technology and creativity. This work represents the endless possibilities of digital expression and the beauty that emerges from the fusion of artistic vision and technical skill."}
                   </motion.p>
 
                   <motion.div
@@ -1170,11 +1183,15 @@ function WorkSection() {
                     transition={{ delay: 0.4 }}
                     className="flex items-center gap-4 mt-6 text-sm text-slate-500 dark:text-slate-400"
                   >
-                    <span>{featuredArt[selectedArt]?.category || "Digital Art"}</span>
+                    <span>
+                      {featuredArt[selectedArt]?.category || "Digital Art"}
+                    </span>
                     <span>•</span>
                     <span>{featuredArt[selectedArt]?.year || "2025"}</span>
                     <span>•</span>
-                    <span>{featuredArt[selectedArt]?.medium || "Mixed Media"}</span>
+                    <span>
+                      {featuredArt[selectedArt]?.medium || "Mixed Media"}
+                    </span>
                   </motion.div>
                 </div>
               </motion.div>
@@ -1354,6 +1371,11 @@ function TestimonialsSection() {
 
 // Contact Section
 function ContactSection() {
+  const contactEmail = useSetting(
+    "contact_email",
+    "dev@boussettahsalah.online"
+  );
+
   return (
     <section id="contact" className="py-32 px-6 text-black dark:text-white">
       <div className="max-w-4xl mx-auto text-center">
@@ -1414,17 +1436,99 @@ function ContactSection() {
         >
           <div className="flex justify-center space-x-8 text-slate-600 dark:text-slate-400">
             <motion.a
-              href="mailto:dev@boussettahsalah.online"
+              href={`mailto:${contactEmail}`}
               className="flex items-center space-x-2 hover:text-black dark:hover:text-white transition-colors duration-300"
             >
               <Mail className="w-5 h-5" />
-              <span>dev@boussettahsalah.online</span>
+              <span>{contactEmail}</span>
             </motion.a>
           </div>
         </motion.div>
       </div>
     </section>
   );
+}
+
+// Dynamic Title Component
+// Dynamic Title and SEO Component
+function DynamicSEO() {
+  const siteName = useSetting("site_name", "SB. Portfolio");
+  const ownerName = useSetting("owner_name", "Salah Eddine Boussettah");
+  const seoMetaTitle = useSetting(
+    "seo_meta_title",
+    "Salah Eddine Boussettah - Developer & Artist"
+  );
+  const seoMetaDescription = useSetting(
+    "seo_meta_description", 
+    "Portfolio of Salah Eddine Boussettah - Software Developer, Game Developer, and Digital Artist"
+  );
+  const seoKeywords = useSetting("seo_keywords", ["developer", "portfolio", "web development"]);
+  const seoOgImage = useSetting("seo_og_image", "");
+
+  useEffect(() => {
+    // Update document title
+    document.title = seoMetaTitle || `${siteName} - ${ownerName}`;
+    
+    // Update meta description
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.setAttribute('name', 'description');
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute('content', seoMetaDescription);
+    
+    // Update meta keywords
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKeywords);
+    }
+    const keywordsString = Array.isArray(seoKeywords) ? seoKeywords.join(', ') : seoKeywords;
+    metaKeywords.setAttribute('content', keywordsString);
+    
+    // Update Open Graph meta tags
+    const updateOgMeta = (property: string, content: string) => {
+      let ogMeta = document.querySelector(`meta[property="${property}"]`);
+      if (!ogMeta) {
+        ogMeta = document.createElement('meta');
+        ogMeta.setAttribute('property', property);
+        document.head.appendChild(ogMeta);
+      }
+      ogMeta.setAttribute('content', content);
+    };
+    
+    updateOgMeta('og:title', seoMetaTitle || `${siteName} - ${ownerName}`);
+    updateOgMeta('og:description', seoMetaDescription);
+    updateOgMeta('og:type', 'website');
+    
+    if (seoOgImage) {
+      updateOgMeta('og:image', seoOgImage);
+    }
+    
+    // Update Twitter Card meta tags
+    const updateTwitterMeta = (name: string, content: string) => {
+      let twitterMeta = document.querySelector(`meta[name="${name}"]`);
+      if (!twitterMeta) {
+        twitterMeta = document.createElement('meta');
+        twitterMeta.setAttribute('name', name);
+        document.head.appendChild(twitterMeta);
+      }
+      twitterMeta.setAttribute('content', content);
+    };
+    
+    updateTwitterMeta('twitter:card', 'summary_large_image');
+    updateTwitterMeta('twitter:title', seoMetaTitle || `${siteName} - ${ownerName}`);
+    updateTwitterMeta('twitter:description', seoMetaDescription);
+    
+    if (seoOgImage) {
+      updateTwitterMeta('twitter:image', seoOgImage);
+    }
+    
+  }, [siteName, ownerName, seoMetaTitle, seoMetaDescription, seoKeywords, seoOgImage]);
+
+  return null; // This component doesn't render anything
 }
 
 export default function SalahEddinePortfolio() {
@@ -1448,6 +1552,7 @@ export default function SalahEddinePortfolio() {
 
   return (
     <div className="bg-white dark:bg-black text-black dark:text-white overflow-x-hidden">
+      <DynamicSEO />
       <AnimatePresence mode="wait">
         {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
       </AnimatePresence>

@@ -5,6 +5,7 @@ const Art = require('./Art');
 const Education = require('./Education');
 const Experience = require('./Experience');
 const TechStack = require('./TechStack');
+const Settings = require('./Settings');
 
 // Initialize models and create default admin
 const initializeModels = async () => {
@@ -14,6 +15,9 @@ const initializeModels = async () => {
     
     // Create default admin
     await Admin.createDefaultAdmin();
+    
+    // Create default settings
+    await Settings.createDefaultSettings();
     
     console.log('✅ All models initialized successfully');
   } catch (error) {
@@ -29,5 +33,6 @@ module.exports = {
   Education,
   Experience,
   TechStack,
+  Settings,
   initializeModels
 };

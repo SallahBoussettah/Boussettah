@@ -1038,6 +1038,84 @@ export const techStackAPI = {
   },
 };
 
+// Settings API
+export const settingsAPI = {
+  // Public settings (for frontend consumption)
+  getPublicSettings: async () => {
+    const response = await fetch(`${API_BASE_URL}/settings/public`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch public settings');
+    }
+    
+    return response.json();
+  },
+
+  getPublicByCategory: async (category: string) => {
+    const response = await fetch(`${API_BASE_URL}/settings/public/${category}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${category} settings`);
+    }
+    
+    return response.json();
+  },
+
+  // Admin settings
+  getAllSettings: async () => {
+    return makeAuthenticatedRequest('/settings/admin/all');
+  },
+
+  getByCategory: async (category: string) => {
+    return makeAuthenticatedRequest(`/settings/admin/${category}`);
+  },
+
+  updateSetting: async (key: string, value: any, isPublic?: boolean) => {
+    const body: any = { value };
+    if (isPublic !== undefined) {
+      body.isPublic = isPublic;
+    }
+    return makeAuthenticatedRequest(`/settings/admin/${key}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  bulkUpdateSettings: async (settings: Record<string, any>) => {
+    return makeAuthenticatedRequest('/settings/admin/bulk-update', {
+      method: 'POST',
+      body: JSON.stringify({ settings }),
+    });
+  },
+
+  createSetting: async (settingData: {
+    key: string;
+    value: any;
+    type: 'string' | 'number' | 'boolean' | 'json' | 'array';
+    category: 'general' | 'social' | 'seo' | 'appearance' | 'contact' | 'portfolio';
+    description?: string;
+    isPublic?: boolean;
+    isEditable?: boolean;
+  }) => {
+    return makeAuthenticatedRequest('/settings/admin', {
+      method: 'POST',
+      body: JSON.stringify(settingData),
+    });
+  },
+
+  deleteSetting: async (key: string) => {
+    return makeAuthenticatedRequest(`/settings/admin/${key}`, {
+      method: 'DELETE',
+    });
+  },
+
+  resetToDefault: async () => {
+    return makeAuthenticatedRequest('/settings/admin/reset', {
+      method: 'POST',
+    });
+  },
+};
+
 // Health check
 export const healthCheck = async () => {
   const response = await fetch(`${API_BASE_URL}/health`);
