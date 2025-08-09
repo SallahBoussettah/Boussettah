@@ -709,48 +709,43 @@ function MobileAppCard({ project, index }: { project: any, index: number }) {
     >
       {/* Mobile App Image - Portrait aspect ratio */}
       <div className="relative overflow-hidden">
-        <div className="aspect-[9/16] max-h-80 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 relative mx-auto">
-          {/* Phone mockup frame */}
-          <div className="absolute inset-4 bg-black dark:bg-white rounded-3xl p-1">
-            <div className="w-full h-full bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 rounded-2xl relative overflow-hidden">
-              {/* Project Image or Fallback */}
-              {project.imageUrl ? (
-                <img
-                  src={project.imageUrl}
-                  alt={project.title}
-                  className="w-full h-full object-cover rounded-2xl"
-                />
-              ) : (
-                <>
-                  {/* Animated background */}
-                  <motion.div
-                    className="absolute inset-0 opacity-20"
-                    animate={{
-                      backgroundPosition: ["0% 0%", "100% 100%"],
-                    }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    style={{
-                      backgroundImage: `radial-gradient(circle at 30% 30%, #8b5cf6 0%, transparent 50%), radial-gradient(circle at 70% 70%, #7c3aed 0%, transparent 50%)`
-                    }}
-                  />
-                  
-                  {/* App icon in center */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.div
-                      animate={{
-                        scale: [1, 1.1, 1],
-                        rotate: [0, 10, 0],
-                      }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                      className="text-4xl text-purple-500"
-                    >
-                      <Smartphone className="w-12 h-12" />
-                    </motion.div>
-                  </div>
-                </>
-              )}
+        <div className="aspect-[3/4] max-h-96 relative mx-auto">
+          {/* Project Image or Fallback */}
+          {project.imageUrl ? (
+            <img
+              src={project.imageUrl}
+              alt={project.title}
+              className="w-full h-full object-contain rounded-t-2xl"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 relative rounded-t-2xl">
+              {/* Animated background */}
+              <motion.div
+                className="absolute inset-0 opacity-20"
+                animate={{
+                  backgroundPosition: ["0% 0%", "100% 100%"],
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                style={{
+                  backgroundImage: `radial-gradient(circle at 30% 30%, #8b5cf6 0%, transparent 50%), radial-gradient(circle at 70% 70%, #7c3aed 0%, transparent 50%)`
+                }}
+              />
+              
+              {/* App icon in center */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 10, 0],
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="text-4xl text-purple-500"
+                >
+                  <Smartphone className="w-12 h-12" />
+                </motion.div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Hover overlay */}
           <motion.div
