@@ -661,10 +661,10 @@ export default function ProjectDetailPage() {
               className="relative"
             >
               <div
-                className={`aspect-video rounded-2xl overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-shadow duration-300 ${
+                className={`rounded-2xl overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-shadow duration-300 ${
                   project.category === "mobile"
-                    ? "aspect-[9/16] max-w-sm mx-auto"
-                    : ""
+                    ? "aspect-[3/4] max-w-md mx-auto"
+                    : "aspect-video"
                 }`}
                 onClick={() => {
                   if (
@@ -680,8 +680,14 @@ export default function ProjectDetailPage() {
                   <motion.img
                     src={project.imageUrl || project.images[0]}
                     alt={project.title}
-                    className="w-full h-full object-cover"
-                    whileHover={{ scale: 1.05 }}
+                    className={`w-full h-full ${
+                      project.category === "mobile"
+                        ? "object-contain"
+                        : "object-cover"
+                    }`}
+                    whileHover={{
+                      scale: project.category === "mobile" ? 1.02 : 1.05,
+                    }}
                     transition={{ duration: 0.3 }}
                   />
                 ) : (
