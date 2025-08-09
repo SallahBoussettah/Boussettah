@@ -560,9 +560,7 @@ function ArtCard({
       transition={{ duration: 0.8, delay: index * 0.1 }}
       viewport={{ once: true }}
       whileHover={{ y: -10 }}
-      className={`group bg-white dark:bg-black rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-2xl transition-all duration-500 ${
-        viewMode === "masonry" ? "break-inside-avoid mb-6" : ""
-      }`}
+      className="group bg-white dark:bg-black rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-2xl transition-all duration-500 break-inside-avoid mb-6"
     >
       {/* Art Image */}
       <div className="relative overflow-hidden cursor-pointer" onClick={onClick}>
@@ -670,7 +668,7 @@ function ArtCard({
       </div>
 
       {/* Art Content */}
-      {viewMode === "grid" ? null : (
+      {viewMode === "masonry" && (
         <div className="p-6">
           {/* List Mode - Full Details */}
           <div className="flex items-start justify-between mb-3">
@@ -992,11 +990,7 @@ function ArtGallery() {
         ) : (
           <motion.div
             layout
-            className={
-              viewMode === "grid"
-                ? "grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-                : "columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6"
-            }
+            className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6"
           >
             <AnimatePresence mode="wait">
               {displayedArtworks.map((artwork, index) => (
