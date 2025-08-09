@@ -37,6 +37,16 @@ module.exports = {
         defaultValue: true,
         allowNull: true,
       },
+      reset_token: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Temporary token for password reset verification'
+      },
+      reset_token_expiry: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: 'Expiration time for password reset token'
+      },
       created_at: {
         type: DataTypes.DATE,
         allowNull: false,

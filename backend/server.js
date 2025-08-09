@@ -64,11 +64,19 @@ app.use('/api/contact', contactRoutes);
 // Serve uploaded files statically with proper headers
 const path = require('path');
 app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', process.env.NODE_ENV === 'production' 
-    ? 'https://yourdomain.com' 
-    : 'http://localhost:3000');
+  // Set CORS headers for uploaded files
+  const allowedOrigins = process.env.NODE_ENV === 'production' 
+    ? ['https://boussettahsalah.online', 'https://www.boussettahsalah.online']
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+  
+  const origin = req.get('Origin');
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET');
   res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
   next();
 }, express.static(path.join(__dirname, 'uploads')));
 

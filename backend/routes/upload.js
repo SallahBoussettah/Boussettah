@@ -49,55 +49,87 @@ const upload = multer({
 router.post('/art', authenticateToken, upload.single('image'), (req, res) => {
   try {
     if (!req.file) {
+      console.error('Upload failed: No file provided');
       return res.status(400).json({
-        message: 'No image file provided'
+        success: false,
+        message: 'No image file provided',
+        code: 'NO_FILE'
       });
     }
 
     // Return the file URL - include full backend URL for cross-origin access
     const baseUrl = process.env.NODE_ENV === 'production' 
-      ? process.env.BACKEND_URL || 'http://localhost:5000'
+      ? (process.env.BACKEND_URL || process.env.DOMAIN ? `https://${process.env.DOMAIN}` : 'https://boussettahsalah.online')
       : 'http://localhost:5000';
+    
     const imageUrl = `${baseUrl}/uploads/art/${req.file.filename}`;
     
-    console.log('Image uploaded successfully:', {
+    console.log('✅ Image uploaded successfully:', {
       filename: req.file.filename,
       imageUrl: imageUrl,
-      originalname: req.file.originalname
+      originalname: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype
     });
 
-    res.json({
+    // Send success response with proper headers
+    res.status(200).json({
+      success: true,
       message: 'Image uploaded successfully',
       imageUrl: imageUrl,
-      filename: req.file.filename
+      filename: req.file.filename,
+      originalname: req.file.originalname,
+      size: req.file.size
     });
 
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('❌ Upload error:', error);
     res.status(500).json({
-      message: 'Error uploading image'
+      success: false,
+      message: 'Error uploading image',
+      code: 'UPLOAD_ERROR',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // Error handling middleware for multer
 router.use((error, req, res, next) => {
+  console.error('❌ Upload middleware error:', error);
+  
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
-        message: 'File too large. Maximum size is 10MB.'
+        success: false,
+        message: 'File too large. Maximum size is 10MB.',
+        code: 'FILE_TOO_LARGE',
+        maxSize: '10MB'
+      });
+    }
+    
+    if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Unexpected field name. Use "image" as the field name.',
+        code: 'UNEXPECTED_FIELD'
       });
     }
   }
   
   if (error.message === 'Only image files are allowed!') {
     return res.status(400).json({
-      message: 'Only image files are allowed!'
+      success: false,
+      message: 'Only image files are allowed!',
+      code: 'INVALID_FILE_TYPE',
+      allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
     });
   }
 
   res.status(500).json({
-    message: 'Error uploading file'
+    success: false,
+    message: 'Error uploading file',
+    code: 'UPLOAD_ERROR',
+    error: process.env.NODE_ENV === 'development' ? error.message : undefined
   });
 });
 
