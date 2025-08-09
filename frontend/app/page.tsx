@@ -817,6 +817,7 @@ function WorkSection() {
     year: project.year || "2025",
     category: project.category || "web",
     slug: project.slug || "project",
+    imageUrl: project.imageUrl,
   }));
 
   // Art gallery state
@@ -907,7 +908,49 @@ function WorkSection() {
                   className="group cursor-pointer"
                 >
                   <div className="relative overflow-hidden rounded-xl mb-6">
-                    <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative">
+                    <div className="aspect-video relative">
+                      {/* Project Image or Fallback */}
+                      {project.imageUrl ? (
+                        <img
+                          src={project.imageUrl}
+                          alt={project.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative">
+                          <motion.div
+                            className="absolute inset-0 flex items-center justify-center"
+                            animate={{
+                              scale: [1, 1.02, 1],
+                            }}
+                            transition={{
+                              duration: 4,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                          >
+                            <div
+                              className={`text-4xl font-bold ${
+                                project.category === "web"
+                                  ? "text-blue-500/30"
+                                  : project.category === "game"
+                                  ? "text-green-500/30"
+                                  : "text-purple-500/30"
+                              }`}
+                            >
+                              {project.category === "web" ? (
+                                <Code className="w-12 h-12" />
+                              ) : project.category === "game" ? (
+                                <Gamepad2 className="w-12 h-12" />
+                              ) : (
+                                <Palette className="w-12 h-12" />
+                              )}
+                            </div>
+                          </motion.div>
+                        </div>
+                      )}
+                      
+                      {/* Hover overlay */}
                       <motion.div
                         className="absolute inset-0 bg-black/0 group-hover:bg-black/20 dark:group-hover:bg-white/20 transition-all duration-500 flex items-center justify-center"
                         whileHover={{ backgroundColor: "rgba(0,0,0,0.2)" }}
@@ -923,36 +966,6 @@ function WorkSection() {
                             <Play className="w-6 h-6 text-black dark:text-white ml-1" />
                           )}
                         </motion.div>
-                      </motion.div>
-
-                      <motion.div
-                        className="absolute inset-0 flex items-center justify-center"
-                        animate={{
-                          scale: [1, 1.02, 1],
-                        }}
-                        transition={{
-                          duration: 4,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                      >
-                        <div
-                          className={`text-4xl font-bold ${
-                            project.category === "web"
-                              ? "text-blue-500/30"
-                              : project.category === "game"
-                              ? "text-green-500/30"
-                              : "text-purple-500/30"
-                          }`}
-                        >
-                          {project.category === "web" ? (
-                            <Code className="w-12 h-12" />
-                          ) : project.category === "game" ? (
-                            <Gamepad2 className="w-12 h-12" />
-                          ) : (
-                            <Palette className="w-12 h-12" />
-                          )}
-                        </div>
                       </motion.div>
                     </div>
                   </div>

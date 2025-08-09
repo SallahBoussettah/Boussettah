@@ -483,18 +483,43 @@ function ProjectCard({ project, index }: { project: any, index: number }) {
     >
       {/* Project Image */}
       <div className="relative overflow-hidden">
-        <div className={`aspect-video bg-gradient-to-br ${getBgGradient(project.category)} relative`}>
-          {/* Animated background pattern */}
-          <motion.div
-            className="absolute inset-0 opacity-20"
-            animate={{
-              backgroundPosition: ["0% 0%", "100% 100%"],
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            style={{
-              backgroundImage: `radial-gradient(circle at 25% 25%, ${project.category === 'web' ? '#3b82f6' : project.category === 'game' ? '#10b981' : '#8b5cf6'} 0%, transparent 50%), radial-gradient(circle at 75% 75%, ${project.category === 'web' ? '#1d4ed8' : project.category === 'game' ? '#059669' : '#7c3aed'} 0%, transparent 50%)`
-            }}
-          />
+        <div className="aspect-video relative">
+          {/* Project Image or Fallback */}
+          {project.imageUrl ? (
+            <img
+              src={project.imageUrl}
+              alt={project.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className={`w-full h-full bg-gradient-to-br ${getBgGradient(project.category)} relative`}>
+              {/* Animated background pattern for fallback */}
+              <motion.div
+                className="absolute inset-0 opacity-20"
+                animate={{
+                  backgroundPosition: ["0% 0%", "100% 100%"],
+                }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                style={{
+                  backgroundImage: `radial-gradient(circle at 25% 25%, ${project.category === 'web' ? '#3b82f6' : project.category === 'game' ? '#10b981' : '#8b5cf6'} 0%, transparent 50%), radial-gradient(circle at 75% 75%, ${project.category === 'web' ? '#1d4ed8' : project.category === 'game' ? '#059669' : '#7c3aed'} 0%, transparent 50%)`
+                }}
+              />
+              
+              {/* Category Icon for fallback */}
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center"
+                animate={{
+                  scale: [1, 1.05, 1],
+                  rotate: [0, 5, 0],
+                }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <div className={`text-6xl font-bold opacity-30 ${getColor(project.category)}`}>
+                  {getIcon(project.category)}
+                </div>
+              </motion.div>
+            </div>
+          )}
           
           {/* Hover overlay */}
           <motion.div
@@ -556,20 +581,6 @@ function ProjectCard({ project, index }: { project: any, index: number }) {
                 </motion.button>
               )}
             </motion.div>
-          </motion.div>
-          
-          {/* Category Icon */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            animate={{
-              scale: [1, 1.05, 1],
-              rotate: [0, 5, 0],
-            }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <div className={`text-6xl font-bold opacity-30 ${getColor(project.category)}`}>
-              {getIcon(project.category)}
-            </div>
           </motion.div>
         </div>
 

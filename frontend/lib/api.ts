@@ -152,7 +152,10 @@ const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) 
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(errorData.message || 'Request failed');
+    // Create a more detailed error object
+    const error = new Error(errorData.message || 'Request failed');
+    (error as any).response = { data: errorData };
+    throw error;
   }
 
   return response.json();
@@ -493,6 +496,63 @@ export const artAPI = {
 
 // Upload API
 export const uploadAPI = {
+  uploadProjectImage: async (file: File): Promise<{ message: string; imageUrl: string; filename: string }> => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+      const response = await fetch(`${API_BASE_URL}/upload/project`, {
+        method: 'POST',
+        headers,
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.status === 401) {
+        // Token expired or invalid
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('isAuthenticated');
+          window.location.href = '/login';
+        }
+        throw new Error('Authentication failed');
+      }
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (parseError) {
+          throw new Error(`Upload failed with status ${response.status}`);
+        }
+        
+        throw new Error(errorData.message || `Upload failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Upload timed out. Please try again with a smaller file.');
+      }
+      
+      throw error;
+    }
+  },
+
   uploadArtImage: async (file: File): Promise<{ message: string; imageUrl: string; filename: string }> => {
     const formData = new FormData();
     formData.append('image', file);

@@ -658,11 +658,19 @@ export default function ProjectDetailPage() {
                     : ""
                 }`}
               >
-                <img
-                  src={project.images[0] || "/placeholder.svg"}
-                  alt={project.title}
-                  className="w-full h-full object-cover"
-                />
+                {project.imageUrl || (project.images && project.images.length > 0) ? (
+                  <img
+                    src={project.imageUrl || project.images[0]}
+                    alt={project.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                    <div className={`text-6xl ${project.category === "web" ? "text-blue-500/30" : project.category === "game" ? "text-green-500/30" : "text-purple-500/30"}`}>
+                      {getIcon(project.category)}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>

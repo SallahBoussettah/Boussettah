@@ -494,34 +494,70 @@ function ProjectsTab() {
       shortDescription: project?.shortDescription || "",
       category: project?.category || "web",
       status: project?.status || "planning",
-      technologies: project?.technologies || [],
-      features: project?.features || [],
-      challenges: project?.challenges || [],
-      learnings: project?.learnings || [],
+      technologies: Array.isArray(project?.technologies) ? project.technologies : (project?.technologies ? project.technologies.split(', ').map(t => t.trim()) : []),
+      features: Array.isArray(project?.features) ? project.features : (project?.features ? project.features.split(', ').map(f => f.trim()) : []),
+      challenges: Array.isArray(project?.challenges) ? project.challenges : (project?.challenges ? project.challenges.split(', ').map(c => c.trim()) : []),
+      learnings: Array.isArray(project?.learnings) ? project.learnings : (project?.learnings ? project.learnings.split(', ').map(l => l.trim()) : []),
       githubUrl: project?.githubUrl || "",
       liveUrl: project?.liveUrl || "",
       demoUrl: project?.demoUrl || "",
       imageUrl: project?.imageUrl || "",
       thumbnailUrl: project?.thumbnailUrl || "",
-      images: project?.images || [],
+      images: Array.isArray(project?.images) ? project.images : (project?.images ? project.images.split(', ').map(i => i.trim()) : []),
       featured: project?.featured || false,
       priority: project?.priority || 0,
       year: project?.year || new Date().getFullYear().toString(),
-      startDate: project?.startDate || "",
-      endDate: project?.endDate || "",
+      startDate: project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : "",
+      endDate: project?.endDate ? new Date(project.endDate).toISOString().split('T')[0] : "",
       isPublic: project?.isPublic !== undefined ? project.isPublic : true,
       completionPercentage: project?.completionPercentage || 0,
       difficulty: project?.difficulty || "intermediate",
       teamSize: project?.teamSize || 1,
       duration: project?.duration || "",
       client: project?.client || "",
-      awards: project?.awards || [],
-      tags: project?.tags || [],
+      awards: Array.isArray(project?.awards) ? project.awards : (project?.awards ? project.awards.split(', ').map(a => a.trim()) : []),
+      tags: Array.isArray(project?.tags) ? project.tags : (project?.tags ? project.tags.split(', ').map(t => t.trim()) : []),
       stars: project?.stars || "",
       downloads: project?.downloads || "",
     });
 
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    const handleImageUpload = async (file: File) => {
+      try {
+        setUploading(true);
+        setUploadProgress(0);
+
+        // Simulate progress for better UX
+        const progressInterval = setInterval(() => {
+          setUploadProgress((prev) => Math.min(prev + 10, 90));
+        }, 200);
+
+        const result = await uploadAPI.uploadProjectImage(file);
+
+        clearInterval(progressInterval);
+        setUploadProgress(100);
+
+        // Update form data with the uploaded image URL
+        setFormData((prev) => ({
+          ...prev,
+          imageUrl: result.imageUrl,
+        }));
+
+        setTimeout(() => {
+          setUploading(false);
+          setUploadProgress(0);
+        }, 500);
+
+        return result;
+      } catch (error) {
+        setUploading(false);
+        setUploadProgress(0);
+        throw error;
+      }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -538,6 +574,17 @@ function ProjectsTab() {
 
         // Clean form data - remove empty strings for URL fields and optional fields
         const cleanedData = { ...formData };
+
+        // Ensure array fields are properly formatted
+        const arrayFields = ['technologies', 'features', 'challenges', 'learnings', 'images', 'awards', 'tags'];
+        arrayFields.forEach(field => {
+          if (cleanedData[field] && !Array.isArray(cleanedData[field])) {
+            cleanedData[field] = [];
+          }
+        });
+
+        // Debug: Log the form data being sent
+        console.log('Form data being submitted:', cleanedData);
 
         // Clean URL fields - convert empty strings to undefined
         const urlFields = [
@@ -569,17 +616,34 @@ function ProjectsTab() {
           }
         });
 
-        // Clean date fields
+        // Clean date fields - convert to proper format or undefined
         const dateFields = ["startDate", "endDate"];
         dateFields.forEach((field) => {
           if (cleanedData[field] === "") {
             cleanedData[field] = undefined;
+          } else if (cleanedData[field]) {
+            // Ensure date is in proper format for backend
+            try {
+              const date = new Date(cleanedData[field]);
+              cleanedData[field] = date.toISOString();
+            } catch (e) {
+              cleanedData[field] = undefined;
+            }
           }
         });
 
         await onSave(cleanedData);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error saving project:", error);
+        // Show more detailed error information
+        if (error.response?.data?.errors) {
+          console.error("Validation errors:", error.response.data.errors);
+          alert(`Validation failed: ${error.response.data.errors.map((e: any) => e.msg).join(', ')}`);
+        } else if (error.message) {
+          alert(`Error: ${error.message}`);
+        } else {
+          alert('An unknown error occurred while saving the project.');
+        }
       } finally {
         setSaving(false);
       }
@@ -868,24 +932,99 @@ function ProjectsTab() {
             </div>
 
             {/* Images */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Main Image URL
+                  Project Image
                 </label>
-                <Input
-                  value={formData.imageUrl}
-                  onChange={(e) =>
-                    setFormData({ ...formData, imageUrl: e.target.value })
-                  }
-                  placeholder="https://example.com/image.jpg"
-                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-                />
+
+                {/* Image Upload Section */}
+                <div className="space-y-4">
+                  {/* Upload Button */}
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            await handleImageUpload(file);
+                          } catch (error) {
+                            console.error("Upload failed:", error);
+                            alert("Upload failed. Please try again.");
+                          }
+                        }
+                      }}
+                      className="hidden"
+                      id="project-image-upload"
+                      disabled={uploading}
+                    />
+                    <label
+                      htmlFor="project-image-upload"
+                      className={`inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors ${
+                        uploading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploading ? "Uploading..." : "Upload Image"}
+                    </label>
+
+                    {uploading && (
+                      <div className="flex-1 max-w-xs">
+                        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                          <div
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          {uploadProgress}% uploaded
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Current Image Preview */}
+                  {formData.imageUrl && (
+                    <div className="relative">
+                      <img
+                        src={formData.imageUrl}
+                        alt="Project preview"
+                        className="w-full max-w-md h-48 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData({ ...formData, imageUrl: "" })
+                        }
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Manual URL Input */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Or enter image URL manually
+                    </label>
+                    <Input
+                      value={formData.imageUrl}
+                      onChange={(e) =>
+                        setFormData({ ...formData, imageUrl: e.target.value })
+                      }
+                      placeholder="https://example.com/image.jpg"
+                      className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Thumbnail URL
+                  Thumbnail URL (Optional)
                 </label>
                 <Input
                   value={formData.thumbnailUrl}
@@ -3608,15 +3747,17 @@ function SettingsTab() {
   const [settings, setSettings] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('general');
+  const [activeCategory, setActiveCategory] = useState("general");
   const [hasChanges, setHasChanges] = useState(false);
-  const [originalSettings, setOriginalSettings] = useState<Record<string, any>>({});
+  const [originalSettings, setOriginalSettings] = useState<Record<string, any>>(
+    {}
+  );
 
   const categories = [
-    { id: 'general', label: 'General', icon: Settings },
-    { id: 'contact', label: 'Contact', icon: Users },
-    { id: 'social', label: 'Social Links', icon: ExternalLink },
-    { id: 'seo', label: 'SEO', icon: Search },
+    { id: "general", label: "General", icon: Settings },
+    { id: "contact", label: "Contact", icon: Users },
+    { id: "social", label: "Social Links", icon: ExternalLink },
+    { id: "seo", label: "SEO", icon: Search },
   ];
 
   useEffect(() => {
@@ -3632,18 +3773,24 @@ function SettingsTab() {
         setOriginalSettings(JSON.parse(JSON.stringify(response.settings)));
       }
     } catch (error) {
-      console.error('Error fetching settings:', error);
+      console.error("Error fetching settings:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSettingChange = (category: string, key: string, value: any, field: string = 'value') => {
+  const handleSettingChange = (
+    category: string,
+    key: string,
+    value: any,
+    field: string = "value"
+  ) => {
     const newSettings = {
       ...settings,
-      [category]: settings[category]?.map((setting: any) =>
-        setting.key === key ? { ...setting, [field]: value } : setting
-      ) || []
+      [category]:
+        settings[category]?.map((setting: any) =>
+          setting.key === key ? { ...setting, [field]: value } : setting
+        ) || [],
     };
     setSettings(newSettings);
     setHasChanges(true);
@@ -3652,24 +3799,27 @@ function SettingsTab() {
   const handleSaveSettings = async () => {
     try {
       setSaving(true);
-      
+
       // Prepare settings for update
       const settingsToUpdate: Record<string, any> = {};
-      
-      Object.keys(settings).forEach(category => {
+
+      Object.keys(settings).forEach((category) => {
         settings[category]?.forEach((setting: any) => {
-          const originalSetting = originalSettings[category]?.find((s: any) => s.key === setting.key);
-          if (originalSetting && (
-            originalSetting.value !== setting.value || 
-            originalSetting.isPublic !== setting.isPublic
-          )) {
+          const originalSetting = originalSettings[category]?.find(
+            (s: any) => s.key === setting.key
+          );
+          if (
+            originalSetting &&
+            (originalSetting.value !== setting.value ||
+              originalSetting.isPublic !== setting.isPublic)
+          ) {
             settingsToUpdate[setting.key] = setting.value;
           }
         });
       });
 
       if (Object.keys(settingsToUpdate).length === 0) {
-        alert('No changes to save');
+        alert("No changes to save");
         return;
       }
 
@@ -3683,66 +3833,82 @@ function SettingsTab() {
           // Find the setting to check if isPublic also changed
           let currentSetting: any = null;
           let originalSetting: any = null;
-          
-          Object.keys(settings).forEach(category => {
+
+          Object.keys(settings).forEach((category) => {
             const found = settings[category]?.find((s: any) => s.key === key);
             if (found) currentSetting = found;
-            
-            const foundOriginal = originalSettings[category]?.find((s: any) => s.key === key);
+
+            const foundOriginal = originalSettings[category]?.find(
+              (s: any) => s.key === key
+            );
             if (foundOriginal) originalSetting = foundOriginal;
           });
-          
-          const isPublicChanged = currentSetting && originalSetting && 
+
+          const isPublicChanged =
+            currentSetting &&
+            originalSetting &&
             currentSetting.isPublic !== originalSetting.isPublic;
-          
+
           await settingsAPI.updateSetting(
-            key, 
-            value, 
+            key,
+            value,
             isPublicChanged ? currentSetting.isPublic : undefined
           );
           successful++;
         } catch (error) {
           failed++;
-          errors.push(`${key}: ${error instanceof Error ? error.message : 'Update failed'}`);
+          errors.push(
+            `${key}: ${
+              error instanceof Error ? error.message : "Update failed"
+            }`
+          );
         }
       }
-      
+
       if (successful > 0) {
-        alert(`Settings saved successfully! Updated ${successful} settings.${failed > 0 ? ` ${failed} failed.` : ''}`);
+        alert(
+          `Settings saved successfully! Updated ${successful} settings.${
+            failed > 0 ? ` ${failed} failed.` : ""
+          }`
+        );
         setHasChanges(false);
         setOriginalSettings(JSON.parse(JSON.stringify(settings)));
-        
+
         if (errors.length > 0) {
-          console.warn('Some settings failed to update:', errors);
+          console.warn("Some settings failed to update:", errors);
         }
       } else {
-        alert('Failed to save any settings. Please try again.');
+        alert("Failed to save any settings. Please try again.");
       }
     } catch (error) {
-      console.error('Error saving settings:', error);
-      alert('Failed to save settings. Please try again.');
+      console.error("Error saving settings:", error);
+      alert("Failed to save settings. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleResetSettings = async () => {
-    if (!confirm('Are you sure you want to reset all settings to default? This action cannot be undone.')) {
+    if (
+      !confirm(
+        "Are you sure you want to reset all settings to default? This action cannot be undone."
+      )
+    ) {
       return;
     }
 
     try {
       setSaving(true);
       const response = await settingsAPI.resetToDefault();
-      
+
       if (response.success) {
-        alert('Settings reset to default successfully!');
+        alert("Settings reset to default successfully!");
         await fetchSettings();
         setHasChanges(false);
       }
     } catch (error) {
-      console.error('Error resetting settings:', error);
-      alert('Failed to reset settings. Please try again.');
+      console.error("Error resetting settings:", error);
+      alert("Failed to reset settings. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -3750,21 +3916,22 @@ function SettingsTab() {
 
   const renderSettingField = (setting: any) => {
     const { key, value, type, description, isPublic } = setting;
-    
+
     const handleChange = (newValue: any) => {
       handleSettingChange(activeCategory, key, newValue);
     };
 
     const handlePublicChange = (newIsPublic: boolean) => {
-      handleSettingChange(activeCategory, key, newIsPublic, 'isPublic');
+      handleSettingChange(activeCategory, key, newIsPublic, "isPublic");
     };
 
     const fieldProps = {
-      className: "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+      className:
+        "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700",
     };
 
     switch (type) {
-      case 'boolean':
+      case "boolean":
         return (
           <div className="flex items-center space-x-3">
             <input
@@ -3774,36 +3941,47 @@ function SettingsTab() {
               className="w-4 h-4 text-blue-600 bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500"
             />
             <span className="text-sm text-slate-600 dark:text-slate-400">
-              {description || 'Enable this option'}
+              {description || "Enable this option"}
             </span>
           </div>
         );
-      
-      case 'number':
+
+      case "number":
         return (
           <Input
             type="number"
-            value={value || ''}
+            value={value || ""}
             onChange={(e) => handleChange(Number(e.target.value))}
             {...fieldProps}
           />
         );
-      
-      case 'array':
+
+      case "array":
         return (
           <Textarea
-            value={Array.isArray(value) ? value.join(', ') : ''}
-            onChange={(e) => handleChange(e.target.value.split(',').map(item => item.trim()).filter(Boolean))}
+            value={Array.isArray(value) ? value.join(", ") : ""}
+            onChange={(e) =>
+              handleChange(
+                e.target.value
+                  .split(",")
+                  .map((item) => item.trim())
+                  .filter(Boolean)
+              )
+            }
             placeholder="Separate items with commas"
             rows={3}
             {...fieldProps}
           />
         );
-      
-      case 'json':
+
+      case "json":
         return (
           <Textarea
-            value={typeof value === 'object' ? JSON.stringify(value, null, 2) : value || ''}
+            value={
+              typeof value === "object"
+                ? JSON.stringify(value, null, 2)
+                : value || ""
+            }
             onChange={(e) => {
               try {
                 const parsed = JSON.parse(e.target.value);
@@ -3817,19 +3995,26 @@ function SettingsTab() {
             {...fieldProps}
           />
         );
-      
+
       default:
-        return key.includes('description') || key.includes('meta_description') ? (
+        return key.includes("description") ||
+          key.includes("meta_description") ? (
           <Textarea
-            value={value || ''}
+            value={value || ""}
             onChange={(e) => handleChange(e.target.value)}
             rows={3}
             {...fieldProps}
           />
         ) : (
           <Input
-            type={key.includes('email') ? 'email' : key.includes('url') || key.includes('link') ? 'url' : 'text'}
-            value={value || ''}
+            type={
+              key.includes("email")
+                ? "email"
+                : key.includes("url") || key.includes("link")
+                ? "url"
+                : "text"
+            }
+            value={value || ""}
             onChange={(e) => handleChange(e.target.value)}
             {...fieldProps}
           />
@@ -3839,9 +4024,9 @@ function SettingsTab() {
 
   const formatLabel = (key: string) => {
     return key
-      .replace(/^[a-z]+_/, '') // Remove category prefix
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase());
+      .replace(/^[a-z]+_/, "") // Remove category prefix
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   if (loading) {
@@ -3849,7 +4034,9 @@ function SettingsTab() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Loading settings...</p>
+          <p className="text-slate-600 dark:text-slate-400">
+            Loading settings...
+          </p>
         </div>
       </div>
     );
@@ -3867,7 +4054,7 @@ function SettingsTab() {
           {hasChanges && (
             <Button
               onClick={() => {
-                if (confirm('Are you sure you want to discard all changes?')) {
+                if (confirm("Are you sure you want to discard all changes?")) {
                   setSettings(JSON.parse(JSON.stringify(originalSettings)));
                   setHasChanges(false);
                 }
@@ -3903,8 +4090,8 @@ function SettingsTab() {
                   onClick={() => setActiveCategory(category.id)}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                     activeCategory === category.id
-                      ? 'bg-blue-500 text-white'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? "bg-blue-500 text-white"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   }`}
                 >
                   <category.icon className="w-4 h-4" />
@@ -3930,7 +4117,8 @@ function SettingsTab() {
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-black dark:text-white">
-                {categories.find(c => c.id === activeCategory)?.label} Settings
+                {categories.find((c) => c.id === activeCategory)?.label}{" "}
+                Settings
               </h3>
               <span className="text-sm text-slate-500 dark:text-slate-400">
                 {currentCategorySettings.length} settings
@@ -3947,7 +4135,10 @@ function SettingsTab() {
             ) : (
               <div className="space-y-6">
                 {currentCategorySettings.map((setting: any) => (
-                  <div key={setting.key} className="space-y-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
+                  <div
+                    key={setting.key}
+                    className="space-y-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg"
+                  >
                     <div className="flex items-center justify-between">
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                         {formatLabel(setting.key)}
@@ -3965,7 +4156,14 @@ function SettingsTab() {
                           <input
                             type="checkbox"
                             checked={setting.isPublic}
-                            onChange={(e) => handleSettingChange(activeCategory, setting.key, e.target.checked, 'isPublic')}
+                            onChange={(e) =>
+                              handleSettingChange(
+                                activeCategory,
+                                setting.key,
+                                e.target.checked,
+                                "isPublic"
+                              )
+                            }
                             disabled={!setting.isEditable}
                             className="w-4 h-4 text-blue-600 bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500"
                           />
@@ -3975,17 +4173,23 @@ function SettingsTab() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {setting.description && (
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {setting.description}
                       </p>
                     )}
-                    
-                    <div className={setting.isEditable ? '' : 'opacity-50 pointer-events-none'}>
+
+                    <div
+                      className={
+                        setting.isEditable
+                          ? ""
+                          : "opacity-50 pointer-events-none"
+                      }
+                    >
                       {renderSettingField(setting)}
                     </div>
-                    
+
                     <div className="text-xs text-slate-400">
                       {setting.isPublic ? (
                         <span className="text-green-600 dark:text-green-400">
