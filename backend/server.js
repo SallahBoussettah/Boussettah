@@ -40,9 +40,23 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// CORS debugging middleware
+// Request debugging middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.path} - Origin: ${req.get('Origin')} - IP: ${req.ip}`);
+  
+  // Log upload requests specifically
+  if (req.path.includes('/upload')) {
+    console.log(`🔄 Upload request details:`, {
+      method: req.method,
+      path: req.path,
+      contentType: req.get('content-type'),
+      contentLength: req.get('content-length'),
+      userAgent: req.get('user-agent'),
+      authorization: req.get('authorization') ? 'Present' : 'Missing'
+    });
+  }
+  
   next();
 });
 
@@ -108,9 +122,21 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// 404 handler with detailed logging
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
+  console.log(`   Headers:`, {
+    origin: req.get('Origin'),
+    userAgent: req.get('User-Agent'),
+    contentType: req.get('Content-Type')
+  });
+  
+  res.status(404).json({ 
+    message: 'Route not found',
+    method: req.method,
+    path: req.originalUrl,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Database connection and server start
