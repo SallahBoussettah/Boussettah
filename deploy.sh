@@ -1,136 +1,80 @@
 #!/bin/bash
 
-# Production deployment script for Oracle Cloud VPS (without Docker)
+echo "🚀 Deploying Portfolio Application..."
 
-echo "🚀 Starting deployment process..."
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# Update system packages
-echo "📦 Updating system packages..."
-sudo apt update && sudo apt upgrade -y
+# Function to print colored output
+print_status() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
 
-# Install required packages
-echo "🔧 Installing required packages..."
-sudo apt install -y nginx postgresql postgresql-contrib git certbot python3-certbot-nginx curl
+print_warning() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
 
-# Install Node.js 18 LTS
-echo "📦 Installing Node.js 18 LTS..."
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+print_error() {
+    echo -e "${RED}❌ $1${NC}"
+}
 
-# Install PM2 globally
-echo "🔧 Installing PM2..."
-sudo npm install -g pm2
+# Stop existing PM2 processes
+print_status "Stopping existing PM2 processes..."
+pm2 stop all
+pm2 delete all
 
-# Clone repository (if not already cloned)
-if [ ! -d "/var/www/portfolio" ]; then
-    echo "📥 Cloning repository..."
-    sudo git clone https://github.com/yourusername/portfolio.git /var/www/portfolio
-    sudo chown -R $USER:$USER /var/www/portfolio
+# Update NGINX configuration
+print_status "Updating NGINX configuration..."
+sudo cp nginx.conf /etc/nginx/sites-available/portfolio
+sudo nginx -t
+if [ $? -eq 0 ]; then
+    sudo systemctl reload nginx
+    print_status "NGINX configuration updated successfully"
+else
+    print_error "NGINX configuration test failed"
+    exit 1
 fi
 
-# Navigate to project directory
-cd /var/www/portfolio
-
-# Copy production environment files
-echo "⚙️ Setting up environment files..."
-cp backend/.env.production backend/.env
-cp frontend/.env.production frontend/.env.local
-
-# Set up database
-echo "🗄️ Setting up PostgreSQL database..."
-sudo -u postgres createdb portfolio_db 2>/dev/null || echo "Database already exists"
-sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'your_production_db_password_here';" 2>/dev/null || echo "Password already set"
-
 # Install backend dependencies
-echo "📦 Installing backend dependencies..."
+print_status "Installing backend dependencies..."
 cd backend
 npm install --production
 cd ..
 
-# Install frontend dependencies and build
-echo "📦 Installing frontend dependencies and building..."
+# Build and install frontend
+print_status "Building frontend..."
 cd frontend
 npm install
 npm run build
 cd ..
 
-# Create uploads directory
-mkdir -p backend/uploads
+# Set proper permissions for uploads
+print_status "Setting upload directory permissions..."
+sudo chown -R www-data:www-data /var/www/portfolio/backend/uploads
+sudo chmod -R 755 /var/www/portfolio/backend/uploads
 
-# Run database migrations
-echo "🔄 Running database migrations..."
-cd backend
-npm run migrate
-cd ..
+# Copy static files for standalone mode
+print_status "Setting up standalone frontend..."
+cp -r frontend/public frontend/.next/standalone/
+cp -r frontend/.next/static frontend/.next/standalone/.next/
 
 # Start applications with PM2
-echo "🚀 Starting applications with PM2..."
-pm2 delete all 2>/dev/null || echo "No existing PM2 processes"
-
-# Start backend
-cd backend
-pm2 start npm --name "portfolio-backend" -- start
-cd ..
-
-# Start frontend
-cd frontend
-pm2 start npm --name "portfolio-frontend" -- start
-cd ..
+print_status "Starting applications with PM2..."
+pm2 start ecosystem.config.js
 
 # Save PM2 configuration
 pm2 save
 pm2 startup
 
-# Set up Nginx
-echo "🌐 Setting up Nginx..."
-sudo cp nginx.conf /etc/nginx/sites-available/boussettahsalah.online
-sudo ln -sf /etc/nginx/sites-available/boussettahsalah.online /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
+print_status "Deployment completed!"
+print_status "Backend running on port 5000"
+print_status "Frontend running on port 3000"
+print_status "NGINX proxying from https://boussettahsalah.online"
 
-# Test Nginx configuration
-sudo nginx -t
-
-# Get SSL certificate
-echo "🔒 Setting up SSL certificate..."
-sudo certbot --nginx -d boussettahsalah.online -d www.boussettahsalah.online --non-interactive --agree-tos --email dev@boussettahsalah.online
-
-# Start and enable services
-echo "🔄 Starting services..."
-sudo systemctl restart nginx
-sudo systemctl enable nginx
-
-# Set up automatic SSL renewal
-echo "🔄 Setting up SSL auto-renewal..."
-(crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet") | crontab -
-
-# Set up log rotation
-echo "📝 Setting up log rotation..."
-sudo tee /etc/logrotate.d/portfolio > /dev/null <<EOF
-/var/www/portfolio/logs/*.log {
-    daily
-    missingok
-    rotate 52
-    compress
-    delaycompress
-    notifempty
-    create 644 $USER $USER
-}
-EOF
-
-# Create logs directory
-mkdir -p /var/www/portfolio/logs
-
-echo "✅ Deployment completed successfully!"
-echo "🌐 Your site should be available at: https://boussettahsalah.online"
 echo ""
-echo "📋 Next steps:"
-echo "1. Update the database password in backend/.env"
-echo "2. Update the JWT secret in backend/.env"
-echo "3. Update the admin password in backend/.env"
-echo "4. Restart the services: pm2 restart all"
-echo ""
-echo "🔧 Useful commands:"
-echo "- View logs: pm2 logs"
-echo "- Restart services: pm2 restart all"
-echo "- View status: pm2 status"
-echo "- Update code: git pull && ./update.sh"
+print_warning "Check logs with: pm2 logs"
+print_warning "Check status with: pm2 status"
+print_warning "Monitor with: pm2 monit"
