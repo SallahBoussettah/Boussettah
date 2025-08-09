@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 async function testContactForm() {
   try {
     console.log('🧪 Testing contact form functionality...\n');
