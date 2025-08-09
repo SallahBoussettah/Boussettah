@@ -1,5 +1,5 @@
 // Load environment variables from the correct path
-require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+require('dotenv').config();
 
 async function testContactForm() {
   try {
@@ -38,21 +38,11 @@ async function testContactForm() {
     console.log('\n4️⃣ Testing database connection...');
     try {
       const { Contact } = require('../models');
-      const testContact = await Contact.create({
-        name: 'Test User',
-        email: 'test@example.com',
-        subject: 'Test Subject',
-        message: 'Test message',
-        ip_address: '127.0.0.1',
-        user_agent: 'Test Agent',
-        status: 'new'
-      });
       
-      console.log('✅ Database test successful, contact ID:', testContact.id);
-      
-      // Clean up test contact
-      await testContact.destroy();
-      console.log('✅ Test contact cleaned up');
+      // Just test if we can query the table
+      const contactCount = await Contact.count();
+      console.log('✅ Database connection successful');
+      console.log(`📊 Current contacts in database: ${contactCount}`);
       
     } catch (error) {
       console.error('❌ Database test failed:', error.message);

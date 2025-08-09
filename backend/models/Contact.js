@@ -54,7 +54,7 @@ module.exports = (sequelize) => {
   }, {
     tableName: 'contacts',
     timestamps: true,
-    underscored: true,
+    underscored: false, // Use camelCase to match the actual database columns
     indexes: [
       {
         fields: ['email']
@@ -63,7 +63,7 @@ module.exports = (sequelize) => {
         fields: ['status']
       },
       {
-        fields: ['created_at']
+        fields: ['createdAt'] // Use camelCase for index
       }
     ]
   });
