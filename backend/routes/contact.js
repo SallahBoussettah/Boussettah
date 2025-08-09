@@ -10,13 +10,18 @@ const router = express.Router();
 // Rate limiting for contact form submissions
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 3, // limit each IP to 3 contact form submissions per windowMs
+  max: 5, // limit each IP to 5 contact form submissions per windowMs (increased for testing)
   message: {
     error: 'Too many contact form submissions from this IP, please try again later.',
     retryAfter: 15 * 60 // 15 minutes in seconds
   },
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true, // Trust proxy for proper IP detection behind NGINX
+  keyGenerator: (req) => {
+    // Use X-Forwarded-For header if available, otherwise use req.ip
+    return req.get('X-Forwarded-For') || req.ip;
+  }
 });
 
 // Validation rules for contact form
@@ -111,6 +116,18 @@ router.post('/', contactLimiter, contactValidation, async (req, res) => {
 
   } catch (error) {
     console.error('Error submitting contact form:', error);
+    
+    // Log more details for debugging
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Contact form error details:', {
+        message: error.message,
+        stack: error.stack,
+        requestBody: req.body,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Failed to submit contact form. Please try again later.',
