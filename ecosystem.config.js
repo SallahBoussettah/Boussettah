@@ -10,6 +10,7 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 5000
       },
+      env_file: '/var/www/portfolio/backend/.env',
       error_file: '/home/ubuntu/.pm2/logs/portfolio-backend-error.log',
       out_file: '/home/ubuntu/.pm2/logs/portfolio-backend-out.log',
       log_file: '/home/ubuntu/.pm2/logs/portfolio-backend.log',

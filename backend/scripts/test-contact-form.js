@@ -1,31 +1,17 @@
-const fetch = require('node-fetch');
-
 async function testContactForm() {
   try {
     console.log('🧪 Testing contact form functionality...\n');
     
-    // Test 1: Check if contact endpoint is accessible
-    console.log('1️⃣ Testing contact endpoint accessibility...');
-    try {
-      const response = await fetch('http://localhost:5000/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: 'Test User',
-          email: 'test@example.com',
-          subject: 'Test Subject',
-          message: 'This is a test message'
-        })
-      });
-      
-      const result = await response.json();
-      console.log('Response status:', response.status);
-      console.log('Response body:', result);
-      
-    } catch (error) {
-      console.error('❌ Contact endpoint test failed:', error.message);
+    // Test 1: Check environment variables first
+    console.log('1️⃣ Checking environment variables...');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('SMTP_EMAIL:', process.env.SMTP_EMAIL ? '✅ Set' : '❌ Missing');
+    console.log('SMTP_APP_PASSWORD:', process.env.SMTP_APP_PASSWORD ? '✅ Set' : '❌ Missing');
+    console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL ? '✅ Set' : '❌ Missing');
+    
+    if (!process.env.SMTP_EMAIL || !process.env.SMTP_APP_PASSWORD) {
+      console.log('\n❌ Email credentials missing! Check .env file and restart PM2 with --update-env');
+      return;
     }
     
     // Test 2: Check email service configuration
