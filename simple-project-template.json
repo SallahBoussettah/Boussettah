@@ -1,0 +1,41 @@
+{
+  "projects": [
+    {
+      "title": "My Project Title",
+      "subtitle": "Brief project description",
+      "slug": "my-project-title",
+      "description": "Detailed description of what this project does and its purpose.",
+      "longDescription": "Extended description with more technical details and implementation specifics.",
+      "shortDescription": "Brief summary of the project",
+      "category": "web",
+      "status": "completed",
+      "technologies": ["React", "Node.js", "MongoDB"],
+      "features": ["Feature 1", "Feature 2", "Feature 3"],
+      "challenges": ["Challenge 1", "Challenge 2"],
+      "learnings": ["Learning 1", "Learning 2"],
+      "githubUrl": "https://github.com/username/project-name",
+      "liveUrl": "https://project-demo.com",
+      "demoUrl": "",
+      "imageUrl": "",
+      "thumbnailUrl": "",
+      "images": [],
+      "featured": false,
+      "priority": 5,
+      "year": "2024",
+      "startDate": "2024-01-01",
+      "endDate": "2024-02-01",
+      "views": 0,
+      "likes": 0,
+      "isPublic": true,
+      "completionPercentage": 100,
+      "difficulty": "intermediate",
+      "teamSize": 1,
+      "duration": "1 month",
+      "client": "Personal Project",
+      "awards": [],
+      "tags": ["web", "fullstack"],
+      "stars": "0",
+      "downloads": "0"
+    }
+  ]
+}

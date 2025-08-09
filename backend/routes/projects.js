@@ -9,30 +9,30 @@ const fs = require("fs");
 // Utility function to delete image file
 const deleteImageFile = (imageUrl) => {
   if (!imageUrl) return;
-  
+
   try {
     // Extract filename from URL
-    const urlParts = imageUrl.split('/');
+    const urlParts = imageUrl.split("/");
     const filename = urlParts[urlParts.length - 1];
-    
+
     // Determine if it's an art or project image based on URL structure
     let filePath;
-    if (imageUrl.includes('/uploads/art/')) {
-      filePath = path.join(__dirname, '../uploads/art', filename);
-    } else if (imageUrl.includes('/uploads/projects/')) {
-      filePath = path.join(__dirname, '../uploads/projects', filename);
+    if (imageUrl.includes("/uploads/art/")) {
+      filePath = path.join(__dirname, "../uploads/art", filename);
+    } else if (imageUrl.includes("/uploads/projects/")) {
+      filePath = path.join(__dirname, "../uploads/projects", filename);
     } else {
       // Skip deletion for external URLs
       return;
     }
-    
+
     // Check if file exists and delete it
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
       console.log(`Deleted old image: ${filename}`);
     }
   } catch (error) {
-    console.error('Error deleting image file:', error);
+    console.error("Error deleting image file:", error);
   }
 };
 
@@ -465,16 +465,25 @@ router.put(
       }
 
       // Check if imageUrl or thumbnailUrl are being updated and delete old images
-      if (req.body.imageUrl !== undefined && req.body.imageUrl !== project.imageUrl) {
+      if (
+        req.body.imageUrl !== undefined &&
+        req.body.imageUrl !== project.imageUrl
+      ) {
         // Delete old image if it exists and is different from new one
         if (project.imageUrl && project.imageUrl !== req.body.imageUrl) {
           deleteImageFile(project.imageUrl);
         }
       }
-      
-      if (req.body.thumbnailUrl !== undefined && req.body.thumbnailUrl !== project.thumbnailUrl) {
+
+      if (
+        req.body.thumbnailUrl !== undefined &&
+        req.body.thumbnailUrl !== project.thumbnailUrl
+      ) {
         // Delete old thumbnail if it exists and is different from new one
-        if (project.thumbnailUrl && project.thumbnailUrl !== req.body.thumbnailUrl) {
+        if (
+          project.thumbnailUrl &&
+          project.thumbnailUrl !== req.body.thumbnailUrl
+        ) {
           deleteImageFile(project.thumbnailUrl);
         }
       }
@@ -513,10 +522,10 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     if (project.thumbnailUrl) {
       deleteImageFile(project.thumbnailUrl);
     }
-    
+
     // Delete additional images if they exist
     if (project.images && Array.isArray(project.images)) {
-      project.images.forEach(imageUrl => {
+      project.images.forEach((imageUrl) => {
         if (imageUrl) {
           deleteImageFile(imageUrl);
         }
@@ -748,6 +757,143 @@ router.get("/category/:category", async (req, res) => {
     console.error("Get projects by category error:", error);
     res.status(500).json({
       message: "Internal server error",
+    });
+  }
+});
+
+// Upload projects from JSON (admin only)
+router.post("/upload-json", authenticateToken, async (req, res) => {
+  try {
+    const { projects } = req.body;
+
+    if (!Array.isArray(projects) || projects.length === 0) {
+      return res.status(400).json({
+        message: "Projects array is required and cannot be empty",
+      });
+    }
+
+    const results = {
+      success: [],
+      errors: [],
+      total: projects.length,
+    };
+
+    for (let i = 0; i < projects.length; i++) {
+      const projectData = projects[i];
+
+      try {
+        // Validate required fields
+        if (!projectData.title) {
+          throw new Error("Title is required");
+        }
+        if (
+          !projectData.category ||
+          !["web", "mobile", "game", "desktop"].includes(projectData.category)
+        ) {
+          throw new Error(
+            "Valid category is required (web, mobile, game, desktop)"
+          );
+        }
+
+        // Generate slug if not provided
+        if (!projectData.slug) {
+          projectData.slug = projectData.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+        }
+
+        // Set defaults for required fields
+        projectData.status = projectData.status || "planning";
+        projectData.isPublic =
+          projectData.isPublic !== undefined ? projectData.isPublic : true;
+        projectData.featured = projectData.featured || false;
+        projectData.priority = projectData.priority || 0;
+        projectData.completionPercentage =
+          projectData.completionPercentage || 0;
+        projectData.teamSize = projectData.teamSize || 1;
+        projectData.year =
+          projectData.year || new Date().getFullYear().toString();
+
+        // Ensure array fields are arrays
+        const arrayFields = [
+          "technologies",
+          "features",
+          "challenges",
+          "learnings",
+          "images",
+          "awards",
+          "tags",
+        ];
+        arrayFields.forEach((field) => {
+          if (projectData[field] && !Array.isArray(projectData[field])) {
+            if (typeof projectData[field] === "string") {
+              projectData[field] = projectData[field]
+                .split(",")
+                .map((item) => item.trim())
+                .filter((item) => item);
+            } else {
+              projectData[field] = [];
+            }
+          } else if (!projectData[field]) {
+            projectData[field] = [];
+          }
+        });
+
+        // Clean URL fields
+        const urlFields = [
+          "githubUrl",
+          "liveUrl",
+          "demoUrl",
+          "imageUrl",
+          "thumbnailUrl",
+        ];
+        urlFields.forEach((field) => {
+          if (projectData[field] === "") {
+            projectData[field] = null;
+          }
+        });
+
+        // Handle date fields
+        const dateFields = ["startDate", "endDate"];
+        dateFields.forEach((field) => {
+          if (projectData[field] && projectData[field] !== "") {
+            try {
+              projectData[field] = new Date(projectData[field]).toISOString();
+            } catch (e) {
+              projectData[field] = null;
+            }
+          } else {
+            projectData[field] = null;
+          }
+        });
+
+        const project = await Project.create(projectData);
+        results.success.push({
+          index: i,
+          title: project.title,
+          id: project.id,
+          slug: project.slug,
+        });
+      } catch (error) {
+        console.error(`Error creating project ${i}:`, error);
+        results.errors.push({
+          index: i,
+          title: projectData.title || `Project ${i + 1}`,
+          error: error.message,
+        });
+      }
+    }
+
+    res.status(201).json({
+      message: `Processed ${results.total} projects. ${results.success.length} created successfully, ${results.errors.length} failed.`,
+      results,
+    });
+  } catch (error) {
+    console.error("Upload JSON projects error:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
     });
   }
 });

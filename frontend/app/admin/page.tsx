@@ -437,6 +437,213 @@ function OverviewTab() {
   );
 }
 
+// JSON Upload Form Component
+function JSONUploadForm({
+  onUpload,
+  onCancel,
+}: {
+  onUpload: (data: any) => void;
+  onCancel: () => void;
+}) {
+  const [jsonText, setJsonText] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleFileUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setJsonText(content);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    const jsonFile = files.find(file => file.type === "application/json" || file.name.endsWith('.json'));
+    
+    if (jsonFile) {
+      handleFileUpload(jsonFile);
+    } else {
+      alert("Please upload a JSON file");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!jsonText.trim()) {
+      alert("Please provide JSON data");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const jsonData = JSON.parse(jsonText);
+      
+      if (!jsonData.projects || !Array.isArray(jsonData.projects)) {
+        throw new Error("JSON must contain a 'projects' array");
+      }
+
+      await onUpload(jsonData);
+    } catch (error: any) {
+      console.error("JSON parsing error:", error);
+      alert(`Invalid JSON format: ${error.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const loadTemplate = () => {
+    const template = {
+      "projects": [
+        {
+          "title": "My Awesome Project",
+          "subtitle": "A brief description of the project",
+          "category": "web",
+          "status": "completed",
+          "technologies": ["React", "Node.js", "PostgreSQL"],
+          "features": ["User authentication", "Real-time updates", "Responsive design"],
+          "challenges": ["Performance optimization", "Cross-browser compatibility"],
+          "learnings": ["Advanced React patterns", "Database optimization"],
+          "githubUrl": "https://github.com/username/project",
+          "liveUrl": "https://project-demo.com",
+          "description": "Detailed project description goes here",
+          "longDescription": "Extended description with more technical details",
+          "featured": false,
+          "priority": 5,
+          "year": "2024",
+          "difficulty": "intermediate",
+          "teamSize": 1,
+          "isPublic": true,
+          "completionPercentage": 100,
+          "tags": ["web", "fullstack", "react"]
+        }
+      ]
+    };
+    setJsonText(JSON.stringify(template, null, 2));
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div className="bg-white dark:bg-black rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold text-black dark:text-white">
+            Upload Projects from JSON
+          </h3>
+          <Button
+            onClick={loadTemplate}
+            className="bg-blue-500 hover:bg-blue-600 text-white text-sm"
+          >
+            Load Template
+          </Button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* File Drop Zone */}
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              dragActive
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-slate-300 dark:border-slate-600"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragActive(true);
+            }}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={handleDrop}
+          >
+            <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+            <p className="text-slate-600 dark:text-slate-300 mb-2">
+              Drag and drop a JSON file here, or click to select
+            </p>
+            <input
+              type="file"
+              accept=".json"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFileUpload(file);
+              }}
+              className="hidden"
+              id="json-file-input"
+            />
+            <label
+              htmlFor="json-file-input"
+              className="inline-block px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              Choose File
+            </label>
+          </div>
+
+          {/* JSON Text Area */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              JSON Data
+            </label>
+            <Textarea
+              value={jsonText}
+              onChange={(e) => setJsonText(e.target.value)}
+              placeholder="Paste your JSON data here or use the file upload above..."
+              className="min-h-[300px] font-mono text-sm bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+            />
+          </div>
+
+          {/* Instructions */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+              JSON Format Instructions:
+            </h4>
+            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+              <li>• The JSON must contain a "projects" array</li>
+              <li>• Each project must have at least "title" and "category" fields</li>
+              <li>• Category must be one of: "web", "mobile", "game", "desktop"</li>
+              <li>• Arrays like "technologies", "features" can be strings or arrays</li>
+              <li>• Images will need to be uploaded separately after import</li>
+              <li>• Click "Load Template" to see the expected format</li>
+            </ul>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-4">
+            <Button
+              type="button"
+              onClick={onCancel}
+              className="bg-slate-500 hover:bg-slate-600 text-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={uploading || !jsonText.trim()}
+              className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+            >
+              {uploading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Projects
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </motion.div>
+  );
+}
+
 // Projects Tab Component
 function ProjectsTab() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -446,6 +653,7 @@ function ProjectsTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [showJSONUpload, setShowJSONUpload] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -1413,6 +1621,42 @@ function ProjectsTab() {
     }
   };
 
+  const handleJSONUpload = async (jsonData: any) => {
+    try {
+      const result = await projectsAPI.uploadFromJSON(jsonData.projects);
+      
+      // Show results to user
+      const { success, errors, total } = result.results;
+      let message = `Upload completed!\n\n`;
+      message += `Total projects: ${total}\n`;
+      message += `Successfully created: ${success.length}\n`;
+      message += `Failed: ${errors.length}\n\n`;
+      
+      if (success.length > 0) {
+        message += `Successfully created:\n`;
+        success.forEach(item => {
+          message += `- ${item.title}\n`;
+        });
+      }
+      
+      if (errors.length > 0) {
+        message += `\nFailed projects:\n`;
+        errors.forEach(item => {
+          message += `- ${item.title}: ${item.error}\n`;
+        });
+      }
+      
+      alert(message);
+      
+      // Refresh the projects list
+      await fetchProjects();
+      setShowJSONUpload(false);
+    } catch (error: any) {
+      console.error("Error uploading JSON:", error);
+      alert(`Error uploading projects: ${error.message || "Please try again."}`);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -1420,13 +1664,22 @@ function ProjectsTab() {
         <h2 className="text-2xl font-bold text-black dark:text-white">
           Projects Management ({projects.length})
         </h2>
-        <Button
-          onClick={() => setShowAddForm(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Project
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Project
+          </Button>
+          <Button
+            onClick={() => setShowJSONUpload(true)}
+            className="bg-green-500 hover:bg-green-600 text-white"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Upload JSON
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -1674,6 +1927,14 @@ function ProjectsTab() {
             setShowAddForm(false);
             setEditingProject(null);
           }}
+        />
+      )}
+
+      {/* JSON Upload Form */}
+      {showJSONUpload && (
+        <JSONUploadForm
+          onUpload={handleJSONUpload}
+          onCancel={() => setShowJSONUpload(false)}
         />
       )}
     </div>

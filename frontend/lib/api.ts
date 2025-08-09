@@ -399,6 +399,21 @@ export const projectsAPI = {
     
     return response.json();
   },
+
+  // Upload projects from JSON
+  uploadFromJSON: async (projects: Partial<Project>[]): Promise<{
+    message: string;
+    results: {
+      success: Array<{ index: number; title: string; id: number; slug: string }>;
+      errors: Array<{ index: number; title: string; error: string }>;
+      total: number;
+    };
+  }> => {
+    return makeAuthenticatedRequest('/projects/upload-json', {
+      method: 'POST',
+      body: JSON.stringify({ projects }),
+    });
+  },
 };
 
 // Art API
