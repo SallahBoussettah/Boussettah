@@ -4,6 +4,36 @@ const path = require('path');
 const fs = require('fs');
 const { authenticateToken } = require('../middleware/auth');
 
+// Utility function to delete image file
+const deleteImageFile = (imageUrl) => {
+  if (!imageUrl) return;
+  
+  try {
+    // Extract filename from URL
+    const urlParts = imageUrl.split('/');
+    const filename = urlParts[urlParts.length - 1];
+    
+    // Determine if it's an art or project image based on URL structure
+    let filePath;
+    if (imageUrl.includes('/uploads/art/')) {
+      filePath = path.join(__dirname, '../uploads/art', filename);
+    } else if (imageUrl.includes('/uploads/projects/')) {
+      filePath = path.join(__dirname, '../uploads/projects', filename);
+    } else {
+      // Skip deletion for external URLs
+      return;
+    }
+    
+    // Check if file exists and delete it
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`Deleted old image: ${filename}`);
+    }
+  } catch (error) {
+    console.error('Error deleting image file:', error);
+  }
+};
+
 const router = express.Router();
 
 // Ensure upload directories exist
@@ -165,6 +195,37 @@ router.post('/project', authenticateToken, projectUpload.single('image'), (req, 
   }
 });
 
+
+// Delete image endpoint
+router.delete('/image', authenticateToken, (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'Image URL is required'
+      });
+    }
+    
+    deleteImageFile(imageUrl);
+    
+    res.json({
+      success: true,
+      message: 'Image deleted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting image'
+    });
+  }
+});
+
+// Export the utility function for use in other routes
+router.deleteImageFile = deleteImageFile;
 
 // Error handling middleware for multer
 router.use((error, req, res, next) => {

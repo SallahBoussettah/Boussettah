@@ -496,6 +496,13 @@ export const artAPI = {
 
 // Upload API
 export const uploadAPI = {
+  deleteImage: async (imageUrl: string): Promise<{ message: string }> => {
+    return makeAuthenticatedRequest('/upload/image', {
+      method: 'DELETE',
+      body: JSON.stringify({ imageUrl }),
+    });
+  },
+
   uploadProjectImage: async (file: File): Promise<{ message: string; imageUrl: string; filename: string }> => {
     const formData = new FormData();
     formData.append('image', file);

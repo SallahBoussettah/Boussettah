@@ -3,6 +3,38 @@ const { body, validationResult, query } = require("express-validator");
 const { Project, sequelize } = require("../models");
 const { authenticateToken } = require("../middleware/auth");
 const { Op } = require("sequelize");
+const path = require("path");
+const fs = require("fs");
+
+// Utility function to delete image file
+const deleteImageFile = (imageUrl) => {
+  if (!imageUrl) return;
+  
+  try {
+    // Extract filename from URL
+    const urlParts = imageUrl.split('/');
+    const filename = urlParts[urlParts.length - 1];
+    
+    // Determine if it's an art or project image based on URL structure
+    let filePath;
+    if (imageUrl.includes('/uploads/art/')) {
+      filePath = path.join(__dirname, '../uploads/art', filename);
+    } else if (imageUrl.includes('/uploads/projects/')) {
+      filePath = path.join(__dirname, '../uploads/projects', filename);
+    } else {
+      // Skip deletion for external URLs
+      return;
+    }
+    
+    // Check if file exists and delete it
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`Deleted old image: ${filename}`);
+    }
+  } catch (error) {
+    console.error('Error deleting image file:', error);
+  }
+};
 
 const router = express.Router();
 
@@ -432,6 +464,21 @@ router.put(
         });
       }
 
+      // Check if imageUrl or thumbnailUrl are being updated and delete old images
+      if (req.body.imageUrl !== undefined && req.body.imageUrl !== project.imageUrl) {
+        // Delete old image if it exists and is different from new one
+        if (project.imageUrl && project.imageUrl !== req.body.imageUrl) {
+          deleteImageFile(project.imageUrl);
+        }
+      }
+      
+      if (req.body.thumbnailUrl !== undefined && req.body.thumbnailUrl !== project.thumbnailUrl) {
+        // Delete old thumbnail if it exists and is different from new one
+        if (project.thumbnailUrl && project.thumbnailUrl !== req.body.thumbnailUrl) {
+          deleteImageFile(project.thumbnailUrl);
+        }
+      }
+
       await project.update(req.body);
 
       res.json({
@@ -456,6 +503,23 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     if (!project) {
       return res.status(404).json({
         message: "Project not found",
+      });
+    }
+
+    // Delete associated images before deleting the project
+    if (project.imageUrl) {
+      deleteImageFile(project.imageUrl);
+    }
+    if (project.thumbnailUrl) {
+      deleteImageFile(project.thumbnailUrl);
+    }
+    
+    // Delete additional images if they exist
+    if (project.images && Array.isArray(project.images)) {
+      project.images.forEach(imageUrl => {
+        if (imageUrl) {
+          deleteImageFile(imageUrl);
+        }
       });
     }
 

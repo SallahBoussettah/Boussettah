@@ -521,14 +521,60 @@ function ProjectsTab() {
       downloads: project?.downloads || "",
     });
 
+
+
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    // Update form data when project prop changes
+    useEffect(() => {
+      if (project) {
+        setFormData({
+          title: project?.title || "",
+          subtitle: project?.subtitle || "",
+          slug: project?.slug || "",
+          description: project?.description || "",
+          longDescription: project?.longDescription || "",
+          shortDescription: project?.shortDescription || "",
+          category: project?.category || "web",
+          status: project?.status || "planning",
+          technologies: Array.isArray(project?.technologies) ? project.technologies : (project?.technologies ? project.technologies.split(', ').map(t => t.trim()) : []),
+          features: Array.isArray(project?.features) ? project.features : (project?.features ? project.features.split(', ').map(f => f.trim()) : []),
+          challenges: Array.isArray(project?.challenges) ? project.challenges : (project?.challenges ? project.challenges.split(', ').map(c => c.trim()) : []),
+          learnings: Array.isArray(project?.learnings) ? project.learnings : (project?.learnings ? project.learnings.split(', ').map(l => l.trim()) : []),
+          githubUrl: project?.githubUrl || "",
+          liveUrl: project?.liveUrl || "",
+          demoUrl: project?.demoUrl || "",
+          imageUrl: project?.imageUrl || "",
+          thumbnailUrl: project?.thumbnailUrl || "",
+          images: Array.isArray(project?.images) ? project.images : (project?.images ? project.images.split(', ').map(i => i.trim()) : []),
+          featured: project?.featured || false,
+          priority: project?.priority || 0,
+          year: project?.year || new Date().getFullYear().toString(),
+          startDate: project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : "",
+          endDate: project?.endDate ? new Date(project.endDate).toISOString().split('T')[0] : "",
+          isPublic: project?.isPublic !== undefined ? project.isPublic : true,
+          completionPercentage: project?.completionPercentage || 0,
+          difficulty: project?.difficulty || "intermediate",
+          teamSize: project?.teamSize || 1,
+          duration: project?.duration || "",
+          client: project?.client || "",
+          awards: Array.isArray(project?.awards) ? project.awards : (project?.awards ? project.awards.split(', ').map(a => a.trim()) : []),
+          tags: Array.isArray(project?.tags) ? project.tags : (project?.tags ? project.tags.split(', ').map(t => t.trim()) : []),
+          stars: project?.stars || "",
+          downloads: project?.downloads || "",
+        });
+      }
+    }, [project]);
 
     const handleImageUpload = async (file: File) => {
       try {
         setUploading(true);
         setUploadProgress(0);
+
+        // Store the old image URL to delete it after successful upload
+        const oldImageUrl = formData.imageUrl;
 
         // Simulate progress for better UX
         const progressInterval = setInterval(() => {
@@ -545,6 +591,16 @@ function ProjectsTab() {
           ...prev,
           imageUrl: result.imageUrl,
         }));
+
+        // Delete the old image if it exists and is different from the new one
+        if (oldImageUrl && oldImageUrl !== result.imageUrl && oldImageUrl.includes('/uploads/')) {
+          try {
+            await uploadAPI.deleteImage(oldImageUrl);
+            console.log('Old image deleted successfully');
+          } catch (error) {
+            console.error('Failed to delete old image:', error);
+          }
+        }
 
         setTimeout(() => {
           setUploading(false);
@@ -992,18 +1048,31 @@ function ProjectsTab() {
                         src={formData.imageUrl}
                         alt="Project preview"
                         className="w-full max-w-md h-48 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setFormData({ ...formData, imageUrl: "" })
-                        }
+                        onClick={async () => {
+                          const oldImageUrl = formData.imageUrl;
+                          setFormData({ ...formData, imageUrl: "" });
+                          
+                          // Delete the image file if it's an uploaded image
+                          if (oldImageUrl && oldImageUrl.includes('/uploads/')) {
+                            try {
+                              await uploadAPI.deleteImage(oldImageUrl);
+                              console.log('Image deleted successfully');
+                            } catch (error) {
+                              console.error('Failed to delete image:', error);
+                            }
+                          }
+                        }}
                         className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   )}
+
 
                   {/* Manual URL Input */}
                   <div>
@@ -1726,7 +1795,19 @@ function ArtTab() {
         // Upload image if a new file was selected
         if (imageFile) {
           setUploadingImage(true);
+          const oldImageUrl = formData.imageUrl;
           imageUrl = await handleImageUpload(imageFile);
+          
+          // Delete the old image if it exists and is different from the new one
+          if (oldImageUrl && oldImageUrl !== imageUrl && oldImageUrl.includes('/uploads/')) {
+            try {
+              await uploadAPI.deleteImage(oldImageUrl);
+              console.log('Old art image deleted successfully');
+            } catch (error) {
+              console.error('Failed to delete old art image:', error);
+            }
+          }
+          
           setUploadingImage(false);
         }
 
@@ -1824,12 +1905,33 @@ function ArtTab() {
             <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6">
               <div className="text-center">
                 {imagePreview || formData.imageUrl ? (
-                  <div className="mb-4">
+                  <div className="mb-4 relative inline-block">
                     <img
                       src={imagePreview || formData.imageUrl}
                       alt="Preview"
                       className="max-w-full h-48 object-cover mx-auto rounded-lg"
                     />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const oldImageUrl = formData.imageUrl;
+                        setFormData({ ...formData, imageUrl: "" });
+                        setImagePreview(null);
+                        
+                        // Delete the image file if it's an uploaded image
+                        if (oldImageUrl && oldImageUrl.includes('/uploads/')) {
+                          try {
+                            await uploadAPI.deleteImage(oldImageUrl);
+                            console.log('Art image deleted successfully');
+                          } catch (error) {
+                            console.error('Failed to delete art image:', error);
+                          }
+                        }
+                      }}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ) : (
                   <div className="mb-4">

@@ -3,6 +3,38 @@ const { body, validationResult, query } = require('express-validator');
 const { Art } = require('../models');
 const { authenticateToken } = require('../middleware/auth');
 const { Op } = require('sequelize');
+const path = require('path');
+const fs = require('fs');
+
+// Utility function to delete image file
+const deleteImageFile = (imageUrl) => {
+  if (!imageUrl) return;
+  
+  try {
+    // Extract filename from URL
+    const urlParts = imageUrl.split('/');
+    const filename = urlParts[urlParts.length - 1];
+    
+    // Determine if it's an art or project image based on URL structure
+    let filePath;
+    if (imageUrl.includes('/uploads/art/')) {
+      filePath = path.join(__dirname, '../uploads/art', filename);
+    } else if (imageUrl.includes('/uploads/projects/')) {
+      filePath = path.join(__dirname, '../uploads/projects', filename);
+    } else {
+      // Skip deletion for external URLs
+      return;
+    }
+    
+    // Check if file exists and delete it
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`Deleted old image: ${filename}`);
+    }
+  } catch (error) {
+    console.error('Error deleting image file:', error);
+  }
+};
 
 const router = express.Router();
 
@@ -263,6 +295,14 @@ router.put('/:id',
         });
       }
 
+      // Check if imageUrl is being updated and delete old image
+      if (req.body.imageUrl !== undefined && req.body.imageUrl !== artPiece.imageUrl) {
+        // Delete old image if it exists and is different from new one
+        if (artPiece.imageUrl && artPiece.imageUrl !== req.body.imageUrl) {
+          deleteImageFile(artPiece.imageUrl);
+        }
+      }
+
       await artPiece.update(req.body);
 
       res.json({
@@ -289,6 +329,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({
         message: 'Art piece not found'
       });
+    }
+
+    // Delete associated image before deleting the art piece
+    if (artPiece.imageUrl) {
+      deleteImageFile(artPiece.imageUrl);
     }
 
     await artPiece.destroy();
