@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 50 * 1024 * 1024, // 50MB limit
   },
   fileFilter: (req, file, cb) => {
     // Check if file is an image
@@ -100,9 +100,9 @@ router.use((error, req, res, next) => {
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         success: false,
-        message: 'File too large. Maximum size is 10MB.',
+        message: 'File too large. Maximum size is 50MB.',
         code: 'FILE_TOO_LARGE',
-        maxSize: '10MB'
+        maxSize: '50MB'
       });
     }
     
