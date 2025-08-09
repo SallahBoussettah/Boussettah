@@ -194,13 +194,47 @@ export const authAPI = {
     });
   },
 
-  resetPassword: async (email: string, newPassword: string, confirmPassword: string) => {
+  requestResetCode: async (email: string) => {
+    const response = await fetch(`${API_BASE_URL}/auth/request-reset-code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to send reset code');
+    }
+
+    return response.json();
+  },
+
+  verifyResetCode: async (email: string, resetCode: string) => {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-reset-code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, resetCode }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Invalid reset code');
+    }
+
+    return response.json();
+  },
+
+  resetPassword: async (email: string, resetCode: string, newPassword: string, confirmPassword: string) => {
     const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, newPassword, confirmPassword }),
+      body: JSON.stringify({ email, resetCode, newPassword, confirmPassword }),
     });
 
     if (!response.ok) {

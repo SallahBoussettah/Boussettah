@@ -125,6 +125,63 @@ class EmailService {
     }
   }
 
+  async sendPasswordResetCode(email, resetCode) {
+    try {
+      const mailOptions = {
+        from: process.env.SMTP_EMAIL || process.env.ADMIN_EMAIL,
+        to: email,
+        subject: 'Password Reset Verification Code',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
+              Password Reset Request
+            </h2>
+            
+            <p style="font-size: 16px; color: #495057;">Hello,</p>
+            
+            <p style="line-height: 1.6; color: #6c757d;">
+              You have requested to reset your admin password. Please use the verification code below to proceed:
+            </p>
+            
+            <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; margin: 30px 0; text-align: center;">
+              <h1 style="color: #007bff; font-size: 48px; margin: 0; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                ${resetCode}
+              </h1>
+              <p style="color: #6c757d; margin: 10px 0 0 0; font-size: 14px;">
+                This code will expire in 15 minutes
+              </p>
+            </div>
+            
+            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <p style="margin: 0; color: #856404; font-size: 14px;">
+                <strong>Security Notice:</strong> If you didn't request this password reset, please ignore this email. 
+                Your password will remain unchanged.
+              </p>
+            </div>
+            
+            <p style="line-height: 1.6; color: #6c757d;">
+              Best regards,<br>
+              <strong>Portfolio Security System</strong>
+            </p>
+            
+            <div style="margin-top: 30px; padding: 15px; background-color: #e9ecef; border-radius: 5px; font-size: 12px; color: #868e96;">
+              <p style="margin: 0;">
+                This is an automated security email. Please do not reply to this email directly.
+              </p>
+            </div>
+          </div>
+        `
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('Password reset code email sent:', info.messageId);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.error('Error sending password reset code email:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   async testConnection() {
     try {
       await this.transporter.verify();

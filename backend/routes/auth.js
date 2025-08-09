@@ -189,12 +189,171 @@ router.put('/change-password',
   }
 );
 
-// Reset password endpoint (for emergency access)
+// Request password reset code endpoint
+router.post('/request-reset-code',
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Valid email is required')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: 'Validation failed',
+          errors: errors.array(),
+          code: 'VALIDATION_ERROR'
+        });
+      }
+
+      const { email } = req.body;
+
+      // Find admin by email
+      const admin = await Admin.findOne({ 
+        where: { 
+          email: email.toLowerCase(),
+          isActive: true 
+        } 
+      });
+
+      if (!admin) {
+        // Don't reveal if email exists or not for security
+        return res.json({
+          message: 'If this email is registered, you will receive a reset code shortly.',
+          code: 'RESET_CODE_SENT'
+        });
+      }
+
+      // Generate 6-digit reset code
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+      // Save reset code to database
+      await admin.update({ 
+        resetToken: resetCode,
+        resetTokenExpiry: resetTokenExpiry
+      });
+
+      // Send email with reset code
+      const emailService = require('../services/emailService');
+      const emailResult = await emailService.sendPasswordResetCode(admin.email, resetCode);
+
+      if (!emailResult.success) {
+        console.error('Failed to send reset code email:', emailResult.error);
+        return res.status(500).json({
+          message: 'Failed to send reset code. Please try again.',
+          code: 'EMAIL_SEND_FAILED'
+        });
+      }
+
+      console.log(`🔐 Password reset code sent to: ${admin.email}`);
+
+      res.json({
+        message: 'Reset code sent to your email address.',
+        code: 'RESET_CODE_SENT'
+      });
+
+    } catch (error) {
+      console.error('Request reset code error:', error);
+      res.status(500).json({
+        message: 'Internal server error',
+        code: 'SERVER_ERROR'
+      });
+    }
+  }
+);
+
+// Verify reset code endpoint
+router.post('/verify-reset-code',
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Valid email is required'),
+    body('resetCode')
+      .isLength({ min: 6, max: 6 })
+      .withMessage('Reset code must be 6 digits')
+      .isNumeric()
+      .withMessage('Reset code must contain only numbers')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: 'Validation failed',
+          errors: errors.array(),
+          code: 'VALIDATION_ERROR'
+        });
+      }
+
+      const { email, resetCode } = req.body;
+
+      // Find admin by email
+      const admin = await Admin.findOne({ 
+        where: { 
+          email: email.toLowerCase(),
+          isActive: true 
+        } 
+      });
+
+      if (!admin || !admin.resetToken || !admin.resetTokenExpiry) {
+        return res.status(400).json({
+          message: 'Invalid or expired reset code',
+          code: 'INVALID_RESET_CODE'
+        });
+      }
+
+      // Check if code has expired
+      if (new Date() > admin.resetTokenExpiry) {
+        // Clear expired token
+        await admin.update({ 
+          resetToken: null,
+          resetTokenExpiry: null
+        });
+        
+        return res.status(400).json({
+          message: 'Reset code has expired. Please request a new one.',
+          code: 'RESET_CODE_EXPIRED'
+        });
+      }
+
+      // Verify reset code
+      if (admin.resetToken !== resetCode) {
+        return res.status(400).json({
+          message: 'Invalid reset code',
+          code: 'INVALID_RESET_CODE'
+        });
+      }
+
+      console.log(`✅ Reset code verified for: ${admin.email}`);
+
+      res.json({
+        message: 'Reset code verified successfully',
+        code: 'RESET_CODE_VERIFIED'
+      });
+
+    } catch (error) {
+      console.error('Verify reset code error:', error);
+      res.status(500).json({
+        message: 'Internal server error',
+        code: 'SERVER_ERROR'
+      });
+    }
+  }
+);
+
+// Reset password endpoint (requires verified code)
 router.post('/reset-password',
   [
     body('email')
       .isEmail()
       .withMessage('Valid email is required'),
+    body('resetCode')
+      .isLength({ min: 6, max: 6 })
+      .withMessage('Reset code must be 6 digits')
+      .isNumeric()
+      .withMessage('Reset code must contain only numbers'),
     body('newPassword')
       .isLength({ min: 6 })
       .withMessage('New password must be at least 6 characters long'),
@@ -217,7 +376,7 @@ router.post('/reset-password',
         });
       }
 
-      const { email, newPassword } = req.body;
+      const { email, resetCode, newPassword } = req.body;
 
       // Find admin by email
       const admin = await Admin.findOne({ 
@@ -227,17 +386,43 @@ router.post('/reset-password',
         } 
       });
 
-      if (!admin) {
-        return res.status(404).json({
-          message: 'Admin account not found with this email',
-          code: 'ADMIN_NOT_FOUND'
+      if (!admin || !admin.resetToken || !admin.resetTokenExpiry) {
+        return res.status(400).json({
+          message: 'Invalid or expired reset code',
+          code: 'INVALID_RESET_CODE'
         });
       }
 
-      // Update password
-      await admin.update({ password: newPassword });
+      // Check if code has expired
+      if (new Date() > admin.resetTokenExpiry) {
+        // Clear expired token
+        await admin.update({ 
+          resetToken: null,
+          resetTokenExpiry: null
+        });
+        
+        return res.status(400).json({
+          message: 'Reset code has expired. Please request a new one.',
+          code: 'RESET_CODE_EXPIRED'
+        });
+      }
 
-      console.log(`🔄 Password reset for admin: ${admin.email}`);
+      // Verify reset code
+      if (admin.resetToken !== resetCode) {
+        return res.status(400).json({
+          message: 'Invalid reset code',
+          code: 'INVALID_RESET_CODE'
+        });
+      }
+
+      // Update password and clear reset token
+      await admin.update({ 
+        password: newPassword,
+        resetToken: null,
+        resetTokenExpiry: null
+      });
+
+      console.log(`🔄 Password reset successfully for admin: ${admin.email}`);
 
       res.json({
         message: 'Password reset successfully',

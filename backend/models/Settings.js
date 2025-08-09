@@ -178,7 +178,7 @@ Settings.createDefaultSettings = async () => {
     },
     {
       key: 'contact_location',
-      value: 'Algeria',
+      value: 'Morocco',
       type: 'string',
       category: 'contact',
       description: 'Location/City',
