@@ -35,11 +35,13 @@ const Admin = sequelize.define('Admin', {
   },
   resetToken: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: true,
+    field: 'reset_token'
   },
   resetTokenExpiry: {
     type: DataTypes.DATE,
-    allowNull: true
+    allowNull: true,
+    field: 'reset_token_expiry'
   }
 }, {
   tableName: 'admins',
