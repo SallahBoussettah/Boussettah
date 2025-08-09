@@ -45,8 +45,19 @@ const upload = multer({
   }
 });
 
-// Upload art image endpoint
-router.post('/art', authenticateToken, upload.single('image'), (req, res) => {
+// Debug middleware for upload
+router.post('/art', (req, res, next) => {
+  console.log('🔄 Upload request received:', {
+    method: req.method,
+    url: req.url,
+    headers: {
+      'content-type': req.get('content-type'),
+      'content-length': req.get('content-length'),
+      'authorization': req.get('authorization') ? 'Bearer [REDACTED]' : 'None'
+    }
+  });
+  next();
+}, authenticateToken, upload.single('image'), (req, res) => {
   try {
     if (!req.file) {
       console.error('Upload failed: No file provided');
@@ -91,6 +102,16 @@ router.post('/art', authenticateToken, upload.single('image'), (req, res) => {
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
+});
+
+// Test endpoint to check if upload route is working
+router.get('/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Upload route is working',
+    timestamp: new Date().toISOString(),
+    uploadDir: artDir
+  });
 });
 
 // Error handling middleware for multer
