@@ -447,7 +447,7 @@ const sampleProjects = [
     shortDescription:
       "Browser-based gaming platform with curated game collection.",
     category: "web",
-    status: "in-development",
+    status: "in-progress",
     technologies: [
       "Next.js",
       "React",
@@ -502,7 +502,7 @@ const sampleProjects = [
     shortDescription:
       "Full-stack time tracking with analytics and project management.",
     category: "web",
-    status: "in-development",
+    status: "in-progress",
     technologies: [
       "React",
       "Tailwind CSS",
@@ -664,7 +664,7 @@ const sampleProjects = [
     shortDescription:
       "RedM stable management system with NPCs and database integration.",
     category: "game",
-    status: "in-development",
+    status: "in-progress",
     technologies: ["RedM Framework", "Lua Language", "MySQL", "NUI System"],
     features: [
       "NPC System",
@@ -825,8 +825,8 @@ const sampleProjects = [
       "A powerful command-line tool engineered to revolutionize how developers interact with codebases in the AI era. RepoDigest transforms any Git repository or local directory into comprehensive, structured digests optimized for Large Language Models including multi-format output, smart file analysis, flexible filtering, and rich analytics.",
     shortDescription:
       "CLI tool for converting codebases into LLM-ready digests.",
-    category: "tool",
-    status: "in-development",
+    category: "desktop",
+    status: "in-progress",
     technologies: [
       "Node.js 18+",
       "TypeScript",
@@ -881,7 +881,7 @@ const sampleProjects = [
     shortDescription:
       "React Native reading app with AI recommendations and quote collection.",
     category: "mobile",
-    status: "in-development",
+    status: "in-progress",
     technologies: [
       "React Native 0.74",
       "Expo SDK 51.0",
