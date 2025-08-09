@@ -26,6 +26,7 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
@@ -294,13 +295,16 @@ function Navigation() {
                 </motion.div>
               </Link>
             ))}
-            
+
             {/* Developer Button */}
             <Link href="/login">
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 + navItems.length * 0.1, duration: 0.6 }}
+                transition={{
+                  delay: 0.7 + navItems.length * 0.1,
+                  duration: 0.6,
+                }}
                 className="ml-4"
               >
                 <motion.button
@@ -366,7 +370,7 @@ function Navigation() {
                   </motion.div>
                 </Link>
               ))}
-              
+
               {/* Developer Button - Mobile */}
               <Link href="/login">
                 <motion.div
@@ -392,8 +396,6 @@ function Navigation() {
   );
 }
 
-
-
 // Project Detail Page Component
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -401,6 +403,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -409,8 +412,8 @@ export default function ProjectDetailPage() {
         const projectData = await projectsAPI.getBySlug(slug);
         setProject(projectData);
       } catch (err: any) {
-        console.error('Error fetching project:', err);
-        setError(err.message || 'Project not found');
+        console.error("Error fetching project:", err);
+        setError(err.message || "Project not found");
       } finally {
         setLoading(false);
       }
@@ -426,7 +429,9 @@ export default function ProjectDetailPage() {
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-slate-300 dark:border-slate-600 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Loading project...</p>
+          <p className="text-slate-600 dark:text-slate-400">
+            Loading project...
+          </p>
         </div>
       </div>
     );
@@ -436,8 +441,12 @@ export default function ProjectDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4 text-black dark:text-white">Project Not Found</h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">{error || 'The project you are looking for does not exist.'}</p>
+          <h1 className="text-4xl font-bold mb-4 text-black dark:text-white">
+            Project Not Found
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            {error || "The project you are looking for does not exist."}
+          </p>
           <Link href="/projects">
             <Button>Back to Projects</Button>
           </Link>
@@ -652,21 +661,40 @@ export default function ProjectDetailPage() {
               className="relative"
             >
               <div
-                className={`aspect-video rounded-2xl overflow-hidden shadow-2xl ${
+                className={`aspect-video rounded-2xl overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-shadow duration-300 ${
                   project.category === "mobile"
                     ? "aspect-[9/16] max-w-sm mx-auto"
                     : ""
                 }`}
+                onClick={() => {
+                  if (
+                    project.imageUrl ||
+                    (project.images && project.images.length > 0)
+                  ) {
+                    setShowImageModal(true);
+                  }
+                }}
               >
-                {project.imageUrl || (project.images && project.images.length > 0) ? (
-                  <img
+                {project.imageUrl ||
+                (project.images && project.images.length > 0) ? (
+                  <motion.img
                     src={project.imageUrl || project.images[0]}
                     alt={project.title}
                     className="w-full h-full object-cover"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.3 }}
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
-                    <div className={`text-6xl ${project.category === "web" ? "text-blue-500/30" : project.category === "game" ? "text-green-500/30" : "text-purple-500/30"}`}>
+                    <div
+                      className={`text-6xl ${
+                        project.category === "web"
+                          ? "text-blue-500/30"
+                          : project.category === "game"
+                          ? "text-green-500/30"
+                          : "text-purple-500/30"
+                      }`}
+                    >
                       {getIcon(project.category)}
                     </div>
                   </div>
@@ -714,21 +742,23 @@ export default function ProjectDetailPage() {
             Key Features
           </AnimatedText>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(project.features && project.features.length > 0) ? project.features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="flex items-center space-x-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg"
-              >
-                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                <span className="text-slate-700 dark:text-slate-300">
-                  {feature}
-                </span>
-              </motion.div>
-            )) : (
+            {project.features && project.features.length > 0 ? (
+              project.features.map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="flex items-center space-x-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg"
+                >
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-slate-700 dark:text-slate-300">
+                    {feature}
+                  </span>
+                </motion.div>
+              ))
+            ) : (
               <div className="col-span-full text-center text-slate-500 dark:text-slate-400">
                 <p>Features information will be added soon.</p>
               </div>
@@ -747,21 +777,23 @@ export default function ProjectDetailPage() {
                 Challenges Overcome
               </AnimatedText>
               <div className="space-y-4">
-                {(project.challenges && project.challenges.length > 0) ? project.challenges.map((challenge, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="flex items-start space-x-3 p-4 bg-white dark:bg-black rounded-lg"
-                  >
-                    <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-700 dark:text-slate-300">
-                      {challenge}
-                    </span>
-                  </motion.div>
-                )) : (
+                {project.challenges && project.challenges.length > 0 ? (
+                  project.challenges.map((challenge, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      className="flex items-start space-x-3 p-4 bg-white dark:bg-black rounded-lg"
+                    >
+                      <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-slate-700 dark:text-slate-300">
+                        {challenge}
+                      </span>
+                    </motion.div>
+                  ))
+                ) : (
                   <div className="text-center text-slate-500 dark:text-slate-400">
                     <p>Challenges information will be added soon.</p>
                   </div>
@@ -775,21 +807,23 @@ export default function ProjectDetailPage() {
                 Key Learnings
               </AnimatedText>
               <div className="space-y-4">
-                {(project.learnings && project.learnings.length > 0) ? project.learnings.map((learning, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="flex items-start space-x-3 p-4 bg-white dark:bg-black rounded-lg"
-                  >
-                    <Star className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-700 dark:text-slate-300">
-                      {learning}
-                    </span>
-                  </motion.div>
-                )) : (
+                {project.learnings && project.learnings.length > 0 ? (
+                  project.learnings.map((learning, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: 30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      className="flex items-start space-x-3 p-4 bg-white dark:bg-black rounded-lg"
+                    >
+                      <Star className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-slate-700 dark:text-slate-300">
+                        {learning}
+                      </span>
+                    </motion.div>
+                  ))
+                ) : (
                   <div className="text-center text-slate-500 dark:text-slate-400">
                     <p>Learnings information will be added soon.</p>
                   </div>
@@ -827,6 +861,47 @@ export default function ProjectDetailPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Image Modal */}
+      <AnimatePresence>
+        {showImageModal &&
+          (project.imageUrl ||
+            (project.images && project.images.length > 0)) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setShowImageModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative max-w-7xl max-h-[90vh] bg-white dark:bg-black rounded-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close button */}
+                <button
+                  onClick={() => setShowImageModal(false)}
+                  className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 dark:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/40 dark:hover:bg-white/40 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+
+                {/* Image section */}
+                <div className="flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-8">
+                  <img
+                    src={project.imageUrl || project.images[0]}
+                    alt={project.title}
+                    className="max-w-full max-h-[80vh] object-contain"
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+      </AnimatePresence>
     </div>
   );
 }
