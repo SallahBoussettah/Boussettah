@@ -11,7 +11,12 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'SB. - Salah Eddine Boussettah | Developer & Digital Artist',
   description: 'Software Developer, Game Developer, and Digital Artist. Crafting digital experiences across web development, game development, and digital art.',
-  generator: 'SalahEddine'
+  generator: 'SalahEddine',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
