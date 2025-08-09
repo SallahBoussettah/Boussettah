@@ -8,29 +8,29 @@ const seedEducation = async () => {
 
     const educationData = [
       {
-        degree: "Master's in Computer Science",
-        school: "University of Technology",
-        year: "2020 - 2022",
-        description: "Specialized in Software Engineering and Artificial Intelligence. Graduated with honors.",
-        icon: "Award",
+        degree: "Diploma in Computer Science",
+        school: "Technical Institute",
+        year: "2023 - 2025",
+        description: "Comprehensive 2-year program in computer science covering software development, programming languages, database management, and web technologies. Focused on practical application of modern development frameworks and tools.",
+        icon: "GraduationCap",
         order: 1,
         isActive: true
       },
       {
-        degree: "Bachelor's in Information Technology",
-        school: "Institute of Technology",
-        year: "2017 - 2020",
-        description: "Foundation in programming, databases, and system design. Active in coding competitions.",
-        icon: "Code",
+        degree: "SVI (Biology) Studies",
+        school: "FSSM - University Semlalia, Marrakech",
+        year: "2021 - 2023",
+        description: "2-year study program in Biology (Sciences de la Vie - SVI) at Faculty of Sciences Semlalia, University Cadi Ayyad in Marrakech. Gained foundational knowledge in biological sciences and scientific methodology.",
+        icon: "Book",
         order: 2,
         isActive: true
       },
       {
-        degree: "Digital Art Certification",
-        school: "Creative Arts Academy",
-        year: "2019",
-        description: "Comprehensive training in digital illustration, 3D modeling, and visual design principles.",
-        icon: "Palette",
+        degree: "Baccalauréat in Physics and Chemistry",
+        school: "High School",
+        year: "2021",
+        description: "High school diploma specializing in Physics and Chemistry. Strong foundation in scientific principles, mathematics, and analytical thinking that later supported transition to computer science.",
+        icon: "Award",
         order: 3,
         isActive: true
       }
