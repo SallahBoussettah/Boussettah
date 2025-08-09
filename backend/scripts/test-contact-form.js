@@ -1,5 +1,5 @@
-// Load environment variables
-require('dotenv').config();
+// Load environment variables from the correct path
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
 async function testContactForm() {
   try {
