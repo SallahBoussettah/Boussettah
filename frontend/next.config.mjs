@@ -10,6 +10,10 @@ const nextConfig = {
     unoptimized: true,
   },
   output: 'standalone',
+  // Ensure public assets are copied to standalone build
+  outputFileTracingIncludes: {
+    '/': ['./public/**/*'],
+  },
   async rewrites() {
     return process.env.NODE_ENV === 'production' 
       ? [
