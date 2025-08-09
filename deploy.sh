@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Production deployment script for Oracle Cloud VPS
+# Production deployment script for Oracle Cloud VPS (without Docker)
 
 echo "🚀 Starting deployment process..."
 
@@ -10,17 +10,16 @@ sudo apt update && sudo apt upgrade -y
 
 # Install required packages
 echo "🔧 Installing required packages..."
-sudo apt install -y nginx postgresql postgresql-contrib nodejs npm git certbot python3-certbot-nginx
+sudo apt install -y nginx postgresql postgresql-contrib git certbot python3-certbot-nginx curl
 
-# Install Docker and Docker Compose
-echo "🐳 Installing Docker..."
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+# Install Node.js 18 LTS
+echo "📦 Installing Node.js 18 LTS..."
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+# Install PM2 globally
+echo "🔧 Installing PM2..."
+sudo npm install -g pm2
 
 # Clone repository (if not already cloned)
 if [ ! -d "/var/www/portfolio" ]; then
@@ -42,19 +41,45 @@ echo "🗄️ Setting up PostgreSQL database..."
 sudo -u postgres createdb portfolio_db 2>/dev/null || echo "Database already exists"
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'your_production_db_password_here';" 2>/dev/null || echo "Password already set"
 
-# Build and start services
-echo "🏗️ Building and starting services..."
-docker-compose down
-docker-compose build
-docker-compose up -d
+# Install backend dependencies
+echo "📦 Installing backend dependencies..."
+cd backend
+npm install --production
+cd ..
 
-# Wait for services to start
-echo "⏳ Waiting for services to start..."
-sleep 30
+# Install frontend dependencies and build
+echo "📦 Installing frontend dependencies and building..."
+cd frontend
+npm install
+npm run build
+cd ..
+
+# Create uploads directory
+mkdir -p backend/uploads
 
 # Run database migrations
 echo "🔄 Running database migrations..."
-docker-compose exec backend npm run migrate
+cd backend
+npm run migrate
+cd ..
+
+# Start applications with PM2
+echo "🚀 Starting applications with PM2..."
+pm2 delete all 2>/dev/null || echo "No existing PM2 processes"
+
+# Start backend
+cd backend
+pm2 start npm --name "portfolio-backend" -- start
+cd ..
+
+# Start frontend
+cd frontend
+pm2 start npm --name "portfolio-frontend" -- start
+cd ..
+
+# Save PM2 configuration
+pm2 save
+pm2 startup
 
 # Set up Nginx
 echo "🌐 Setting up Nginx..."
@@ -73,7 +98,6 @@ sudo certbot --nginx -d boussettahsalah.online -d www.boussettahsalah.online --n
 echo "🔄 Starting services..."
 sudo systemctl restart nginx
 sudo systemctl enable nginx
-sudo systemctl enable docker
 
 # Set up automatic SSL renewal
 echo "🔄 Setting up SSL auto-renewal..."
@@ -100,12 +124,13 @@ echo "✅ Deployment completed successfully!"
 echo "🌐 Your site should be available at: https://boussettahsalah.online"
 echo ""
 echo "📋 Next steps:"
-echo "1. Update the database password in backend/.env.production"
-echo "2. Update the JWT secret in backend/.env.production"
-echo "3. Update the admin password in backend/.env.production"
-echo "4. Restart the services: docker-compose restart"
+echo "1. Update the database password in backend/.env"
+echo "2. Update the JWT secret in backend/.env"
+echo "3. Update the admin password in backend/.env"
+echo "4. Restart the services: pm2 restart all"
 echo ""
 echo "🔧 Useful commands:"
-echo "- View logs: docker-compose logs -f"
-echo "- Restart services: docker-compose restart"
-echo "- Update code: git pull && docker-compose build && docker-compose up -d"
+echo "- View logs: pm2 logs"
+echo "- Restart services: pm2 restart all"
+echo "- View status: pm2 status"
+echo "- Update code: git pull && ./update.sh"

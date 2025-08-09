@@ -11,27 +11,33 @@ This guide will help you deploy the portfolio application to Oracle Cloud VPS wi
 ## Quick Deployment
 
 1. **Connect to your VPS:**
+
    ```bash
    ssh ubuntu@your-vps-ip
    ```
 
 2. **Clone the repository:**
+
    ```bash
    git clone https://github.com/yourusername/portfolio.git
    cd portfolio
    ```
 
 3. **Run the deployment script:**
+
    ```bash
    chmod +x deploy.sh
    ./deploy.sh
    ```
 
 4. **Update environment variables:**
+
    ```bash
    nano backend/.env.production
    ```
+
    Update the following:
+
    - `DB_PASSWORD`: Set a secure database password
    - `JWT_SECRET`: Set a long, random JWT secret
    - `ADMIN_PASSWORD`: Set a secure admin password
@@ -52,14 +58,12 @@ sudo apt update && sudo apt upgrade -y
 # Install required packages
 sudo apt install -y nginx postgresql postgresql-contrib nodejs npm git certbot python3-certbot-nginx
 
-# Install Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+# Install Node.js 18 LTS
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+# Install PM2 globally
+sudo npm install -g pm2
 ```
 
 ### 2. Database Setup
@@ -67,7 +71,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 ```bash
 # Create database
 sudo -u postgres createdb portfolio_db
-sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'your_secure_password';"
+sudo -u postgres psql -c "ALTER USER portfolio_user PASSWORD 'your_secure_password';"
 ```
 
 ### 3. Application Setup
@@ -85,15 +89,32 @@ cp frontend/.env.production frontend/.env.local
 nano backend/.env
 ```
 
-### 4. Docker Setup
+### 4. Application Setup
 
 ```bash
-# Build and start services
-docker-compose build
-docker-compose up -d
+# Install backend dependencies
+cd backend
+npm install --production
+cd ..
+
+# Install frontend dependencies and build
+cd frontend
+npm install
+npm run build
+cd ..
 
 # Run database migrations
-docker-compose exec backend npm run migrate
+cd backend
+npm run migrate
+cd ..
+
+# Start applications with PM2
+pm2 start backend/server.js --name "portfolio-backend"
+cd frontend && pm2 start npm --name "portfolio-frontend" -- start && cd ..
+
+# Save PM2 configuration
+pm2 save
+pm2 startup
 ```
 
 ### 5. Nginx Setup
@@ -165,6 +186,7 @@ NODE_ENV=production
 ## Useful Commands
 
 ### Docker Commands
+
 ```bash
 # View logs
 docker-compose logs -f
@@ -180,6 +202,7 @@ docker-compose build && docker-compose up -d
 ```
 
 ### Database Commands
+
 ```bash
 # Access database
 docker-compose exec postgres psql -U postgres -d portfolio_db
@@ -192,6 +215,7 @@ docker-compose exec postgres pg_dump -U postgres portfolio_db > backup.sql
 ```
 
 ### Nginx Commands
+
 ```bash
 # Test configuration
 sudo nginx -t
@@ -216,12 +240,14 @@ git pull origin main
 ## Troubleshooting
 
 ### Check Service Status
+
 ```bash
 docker-compose ps
 sudo systemctl status nginx
 ```
 
 ### View Logs
+
 ```bash
 # Application logs
 docker-compose logs -f backend
@@ -250,6 +276,7 @@ sudo tail -f /var/log/nginx/access.log
 ## Monitoring
 
 Set up monitoring for:
+
 - Application uptime
 - Database performance
 - SSL certificate expiration

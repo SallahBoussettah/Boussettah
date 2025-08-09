@@ -5,12 +5,12 @@ Requires=postgresql.service
 
 [Service]
 Type=forking
-User=www-data
-Group=www-data
+User=ubuntu
+Group=ubuntu
 WorkingDirectory=/var/www/portfolio
-ExecStart=/usr/local/bin/docker-compose up -d
-ExecStop=/usr/local/bin/docker-compose down
-ExecReload=/usr/local/bin/docker-compose restart
+ExecStart=/usr/bin/pm2 start ecosystem.config.js --env production
+ExecStop=/usr/bin/pm2 stop ecosystem.config.js
+ExecReload=/usr/bin/pm2 restart ecosystem.config.js
 Restart=always
 RestartSec=10
 
