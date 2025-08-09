@@ -494,8 +494,6 @@ export const artAPI = {
 // Upload API
 export const uploadAPI = {
   uploadArtImage: async (file: File): Promise<{ message: string; imageUrl: string; filename: string }> => {
-    console.log('🔄 Starting image upload:', { name: file.name, size: file.size, type: file.type });
-    
     const formData = new FormData();
     formData.append('image', file);
 
@@ -519,8 +517,6 @@ export const uploadAPI = {
 
       clearTimeout(timeoutId);
 
-      console.log('📡 Upload response status:', response.status);
-
       if (response.status === 401) {
         // Token expired or invalid
         if (typeof window !== 'undefined') {
@@ -536,26 +532,20 @@ export const uploadAPI = {
         try {
           errorData = await response.json();
         } catch (parseError) {
-          console.error('❌ Failed to parse error response:', parseError);
           throw new Error(`Upload failed with status ${response.status}`);
         }
         
-        console.error('❌ Upload error response:', errorData);
         throw new Error(errorData.message || `Upload failed with status ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('✅ Upload successful:', result);
-      
       return result;
 
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.error('❌ Upload timeout');
         throw new Error('Upload timed out. Please try again with a smaller file.');
       }
       
-      console.error('❌ Upload error:', error);
       throw error;
     }
   },

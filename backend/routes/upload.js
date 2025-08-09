@@ -45,19 +45,8 @@ const upload = multer({
   }
 });
 
-// Debug middleware for upload
-router.post('/art', (req, res, next) => {
-  console.log('🔄 Upload request received:', {
-    method: req.method,
-    url: req.url,
-    headers: {
-      'content-type': req.get('content-type'),
-      'content-length': req.get('content-length'),
-      'authorization': req.get('authorization') ? 'Bearer [REDACTED]' : 'None'
-    }
-  });
-  next();
-}, authenticateToken, upload.single('image'), (req, res) => {
+// Upload art image endpoint
+router.post('/art', authenticateToken, upload.single('image'), (req, res) => {
   try {
     if (!req.file) {
       console.error('Upload failed: No file provided');
@@ -75,13 +64,9 @@ router.post('/art', (req, res, next) => {
     
     const imageUrl = `${baseUrl}/uploads/art/${req.file.filename}`;
     
-    console.log('✅ Image uploaded successfully:', {
-      filename: req.file.filename,
-      imageUrl: imageUrl,
-      originalname: req.file.originalname,
-      size: req.file.size,
-      mimetype: req.file.mimetype
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Image uploaded:', req.file.filename);
+    }
 
     // Send success response with proper headers
     res.status(200).json({
@@ -104,19 +89,12 @@ router.post('/art', (req, res, next) => {
   }
 });
 
-// Test endpoint to check if upload route is working
-router.get('/test', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Upload route is working',
-    timestamp: new Date().toISOString(),
-    uploadDir: artDir
-  });
-});
 
 // Error handling middleware for multer
 router.use((error, req, res, next) => {
-  console.error('❌ Upload middleware error:', error);
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Upload error:', error.message);
+  }
   
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
