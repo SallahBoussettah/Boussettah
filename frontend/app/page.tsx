@@ -73,12 +73,14 @@ function ThemeToggle() {
     <>
       <motion.button
         onClick={handleThemeToggle}
-        className="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300"
+        className="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300 min-w-[48px] min-h-[48px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.5, duration: 0.8, ease: [0.21, 1, 0.81, 1] }}
+        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+        title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
       >
         <motion.div
           animate={{
@@ -290,7 +292,9 @@ function LoadingScreen({ onComplete }: { onComplete: () => void }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="text-sm text-slate-500 dark:text-slate-400 font-light tracking-widest"
+            className="text-sm text-slate-600 dark:text-slate-300 font-light tracking-widest"
+            aria-live="polite"
+            aria-label={`Loading progress: ${progress} percent`}
           >
             {progress}%
           </motion.p>
@@ -430,13 +434,15 @@ function Navigation() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.4 + index * 0.1, duration: 0.6 }}
-                  className="text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors duration-300 font-medium relative group cursor-pointer"
+                  className="text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white transition-colors duration-300 font-medium relative group cursor-pointer py-2 px-1 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 rounded"
                   whileHover={{ y: -2 }}
+                  tabIndex={0}
                 >
                   {item.name}
                   <motion.div
                     className="absolute -bottom-1 left-0 w-0 h-0.5 bg-black dark:bg-white group-hover:w-full transition-all duration-300"
                     whileHover={{ width: "100%" }}
+                    aria-hidden="true"
                   />
                 </motion.div>
               </Link>
@@ -454,9 +460,10 @@ function Navigation() {
                 className="ml-4"
               >
                 <motion.button
-                  className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 text-sm"
+                  className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
+                  aria-label="Access developer login area"
                 >
                   For Developer
                 </motion.button>
@@ -466,9 +473,15 @@ function Navigation() {
 
           {/* Mobile Menu Button */}
           <motion.button
-            className="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             whileTap={{ scale: 0.95 }}
+            aria-label={
+              isMobileMenuOpen
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
+            aria-expanded={isMobileMenuOpen}
           >
             <motion.div
               animate={{ rotate: isMobileMenuOpen ? 45 : 0 }}
@@ -509,8 +522,9 @@ function Navigation() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1, duration: 0.3 }}
-                    className="block py-3 text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors duration-300 font-medium cursor-pointer"
+                    className="block py-3 text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white transition-colors duration-300 font-medium cursor-pointer min-h-[44px] flex items-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 rounded px-2"
                     onClick={() => setIsMobileMenuOpen(false)}
+                    tabIndex={0}
                   >
                     {item.name}
                   </motion.div>
@@ -527,8 +541,9 @@ function Navigation() {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <motion.button
-                    className="w-full bg-black dark:bg-white text-white dark:text-black px-4 py-3 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 text-center"
+                    className="w-full bg-black dark:bg-white text-white dark:text-black px-4 py-3 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 text-center min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
                     whileTap={{ scale: 0.95 }}
+                    aria-label="Access developer login area"
                   >
                     For Developer
                   </motion.button>
@@ -569,6 +584,7 @@ function HeroSection() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1, delay: 0.2 }}
       className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
+      aria-label="Hero section"
     >
       <motion.div style={{ y }} className="text-center z-10">
         <motion.h1
@@ -592,7 +608,7 @@ function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.9 }}
-          className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 mb-12 font-light tracking-wide"
+          className="text-xl md:text-2xl text-slate-700 dark:text-slate-300 mb-12 font-light tracking-wide"
         >
           {siteDescription}
         </motion.p>
@@ -604,24 +620,30 @@ function HeroSection() {
           className="flex flex-wrap justify-center gap-4"
         >
           <Link href="/projects">
-            <Button className="group bg-black dark:bg-white text-white dark:text-black px-8 text-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 h-[48px] flex items-center">
+            <Button className="group bg-black dark:bg-white text-white dark:text-black px-8 text-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 h-[48px] flex items-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
               View My Work
               <motion.div
                 className="ml-2"
                 animate={{ x: [0, 5, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
+                aria-hidden="true"
               >
                 <ArrowRight className="w-5 h-5" />
               </motion.div>
             </Button>
           </Link>
 
-          <a href={socialGithub} target="_blank" rel="noopener noreferrer">
+          <a
+            href={socialGithub}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit my GitHub profile"
+          >
             <Button
               variant="outline"
-              className="group border-2 border-black dark:border-white text-black dark:text-white px-8 text-lg font-medium hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 h-[48px] flex items-center"
+              className="group border-2 border-black dark:border-white text-black dark:text-white px-8 text-lg font-medium hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 h-[48px] flex items-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
             >
-              <Github className="w-5 h-5 mr-2" />
+              <Github className="w-5 h-5 mr-2" aria-hidden="true" />
               GitHub
             </Button>
           </a>
@@ -672,21 +694,25 @@ function AboutSection() {
   );
 
   return (
-    <section id="about" className="py-32 px-6 max-w-6xl mx-auto">
+    <section
+      id="about"
+      className="py-32 px-6 max-w-6xl mx-auto"
+      aria-label="About section"
+    >
       <div className="grid md:grid-cols-2 gap-16 items-center">
         <div>
-          <AnimatedText className="text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6">
+          <AnimatedText className="text-sm uppercase tracking-widest text-slate-600 dark:text-slate-300 mb-6">
             About
           </AnimatedText>
           <AnimatedText
             delay={0.2}
             className="text-4xl md:text-5xl font-bold mb-8 leading-tight text-black dark:text-white"
           >
-            {siteTagline}
+            <h2>{siteTagline}</h2>
           </AnimatedText>
           <AnimatedText
             delay={0.4}
-            className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-8"
+            className="text-lg text-slate-700 dark:text-slate-200 leading-relaxed mb-8"
           >
             I'm a {ownerTitle.toLowerCase()} who thrives at the intersection of
             technology and creativity. With expertise spanning web development,
@@ -695,7 +721,7 @@ function AboutSection() {
           </AnimatedText>
           <AnimatedText
             delay={0.6}
-            className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-8"
+            className="text-lg text-slate-700 dark:text-slate-200 leading-relaxed mb-8"
           >
             My passion lies in creating immersive digital experiences that not
             only function flawlessly but also tell compelling stories through
@@ -825,6 +851,28 @@ function WorkSection() {
   const [featuredArt, setFeaturedArt] = useState<any[]>([]);
   const [artLoading, setArtLoading] = useState(true);
 
+  // Keyboard navigation for modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedArt !== null && e.key === "Escape") {
+        setSelectedArt(null);
+      }
+    };
+
+    if (selectedArt !== null) {
+      document.addEventListener("keydown", handleKeyDown);
+      // Focus management for modal
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedArt]);
+
   useEffect(() => {
     const fetchFeaturedArt = async () => {
       try {
@@ -874,7 +922,7 @@ function WorkSection() {
   return (
     <section id="projects" className="py-32 px-6">
       <div className="max-w-7xl mx-auto">
-        <AnimatedText className="text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6 text-center">
+        <AnimatedText className="text-sm uppercase tracking-widest text-slate-600 dark:text-slate-300 mb-6 text-center">
           Featured Work
         </AnimatedText>
         <AnimatedText
@@ -905,7 +953,9 @@ function WorkSection() {
                   transition={{ duration: 0.8, delay: index * 0.1 }}
                   viewport={{ once: true }}
                   whileHover={{ y: -10 }}
-                  className="group cursor-pointer"
+                  className="group cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 rounded-xl"
+                  tabIndex={0}
+                  aria-label={`View ${project.title} project details`}
                 >
                   <div className="relative overflow-hidden rounded-xl mb-6">
                     <div className="aspect-video relative">
@@ -913,8 +963,9 @@ function WorkSection() {
                       {project.imageUrl ? (
                         <img
                           src={project.imageUrl}
-                          alt={project.title}
+                          alt={`${project.title} project screenshot`}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative">
@@ -949,7 +1000,7 @@ function WorkSection() {
                           </motion.div>
                         </div>
                       )}
-                      
+
                       {/* Hover overlay */}
                       <motion.div
                         className="absolute inset-0 bg-black/0 group-hover:bg-black/20 dark:group-hover:bg-white/20 transition-all duration-500 flex items-center justify-center"
@@ -1000,12 +1051,13 @@ function WorkSection() {
           className="text-center mb-20"
         >
           <Link href="/projects">
-            <Button className="group bg-black dark:bg-white text-white dark:text-black px-8 py-3 text-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300">
+            <Button className="group bg-black dark:bg-white text-white dark:text-black px-8 py-3 text-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
               View All Projects
               <motion.div
                 className="ml-2"
                 animate={{ x: [0, 5, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
+                aria-hidden="true"
               >
                 <ArrowRight className="w-5 h-5" />
               </motion.div>
@@ -1015,7 +1067,7 @@ function WorkSection() {
 
         {/* Digital Art Section */}
         <AnimatedText className="text-4xl md:text-5xl font-bold mb-16 text-center text-black dark:text-white">
-          Digital Art
+          <h2>Digital Art</h2>
         </AnimatedText>
 
         <div id="art" className="mt-20">
@@ -1037,15 +1089,25 @@ function WorkSection() {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   viewport={{ once: true }}
                   whileHover={{ scale: 1.05 }}
-                  className="group cursor-pointer"
+                  className="group cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 rounded-xl"
                   onClick={() => setSelectedArt(index)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedArt(index);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View ${artPiece.title} artwork in detail`}
                 >
                   <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-xl relative overflow-hidden">
                     {artPiece.imageUrl ? (
                       <img
                         src={artPiece.imageUrl}
-                        alt={artPiece.title}
+                        alt={`${artPiece.title} - Digital artwork by Salah Eddine Boussettah`}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                         onError={(e) => {
                           // Fallback to gradient background if image fails to load
                           e.currentTarget.style.display = "none";
@@ -1084,6 +1146,10 @@ function WorkSection() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
               onClick={() => setSelectedArt(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="art-modal-title"
+              aria-describedby="art-modal-description"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -1096,7 +1162,8 @@ function WorkSection() {
                 {/* Close button */}
                 <button
                   onClick={() => setSelectedArt(null)}
-                  className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 dark:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/40 dark:hover:bg-white/40 transition-colors"
+                  className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 dark:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/40 dark:hover:bg-white/40 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-transparent"
+                  aria-label="Close artwork modal"
                 >
                   <svg
                     className="w-6 h-6"
@@ -1175,6 +1242,7 @@ function WorkSection() {
                 {/* Art title and description */}
                 <div className="p-8">
                   <motion.h2
+                    id="art-modal-title"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
@@ -1183,10 +1251,11 @@ function WorkSection() {
                     {featuredArt[selectedArt]?.title || "Artwork"}
                   </motion.h2>
                   <motion.p
+                    id="art-modal-description"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="text-slate-600 dark:text-slate-300 leading-relaxed"
+                    className="text-slate-700 dark:text-slate-200 leading-relaxed"
                   >
                     {featuredArt[selectedArt]?.description ||
                       "A stunning digital art piece that explores the intersection of technology and creativity. This work represents the endless possibilities of digital expression and the beauty that emerges from the fusion of artistic vision and technical skill."}
@@ -1397,7 +1466,9 @@ function ContactSection() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -1413,10 +1484,10 @@ function ContactSection() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
+      const response = await fetch("/api/contact", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...formData,
@@ -1433,14 +1504,14 @@ function ContactSection() {
           setSubmitStatus("idle");
         }, 3000);
       } else {
-        console.error('Form submission failed:', result);
+        console.error("Form submission failed:", result);
         setSubmitStatus("error");
         setTimeout(() => {
           setSubmitStatus("idle");
         }, 5000);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error);
       setSubmitStatus("error");
       setTimeout(() => {
         setSubmitStatus("idle");
@@ -1453,18 +1524,18 @@ function ContactSection() {
   return (
     <section id="contact" className="py-32 px-6 text-black dark:text-white">
       <div className="max-w-4xl mx-auto text-center">
-        <AnimatedText className="text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6">
+        <AnimatedText className="text-sm uppercase tracking-widest text-slate-600 dark:text-slate-300 mb-6">
           Contact
         </AnimatedText>
         <AnimatedText
           delay={0.2}
           className="text-4xl md:text-6xl font-bold mb-8 text-black dark:text-white"
         >
-          Let's create something amazing
+          <h2>Let's create something amazing</h2>
         </AnimatedText>
         <AnimatedText
           delay={0.4}
-          className="text-xl text-slate-600 dark:text-slate-300 mb-16 max-w-2xl mx-auto"
+          className="text-xl text-slate-700 dark:text-slate-200 mb-16 max-w-2xl mx-auto"
         >
           Ready to bring your next project to life? Whether it's web
           development, game development, or digital art, let's collaborate.
@@ -1478,35 +1549,60 @@ function ContactSection() {
           viewport={{ once: true }}
           className="max-w-md mx-auto space-y-6"
         >
-          <Input
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="Your Name"
-            required
-            className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-          />
-          <Input
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Your Email"
-            required
-            className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-          />
-          <Textarea
-            name="message"
-            value={formData.message}
-            onChange={handleInputChange}
-            placeholder="Tell me about your project"
-            required
-            className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 min-h-32"
-          />
-          <Button 
+          <div>
+            <label htmlFor="contact-name" className="sr-only">
+              Your Name
+            </label>
+            <Input
+              id="contact-name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              placeholder="Your Name"
+              required
+              aria-required="true"
+              className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-600 dark:placeholder:text-slate-300 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+            />
+          </div>
+          <div>
+            <label htmlFor="contact-email" className="sr-only">
+              Your Email
+            </label>
+            <Input
+              id="contact-email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Your Email"
+              required
+              aria-required="true"
+              aria-describedby="email-error"
+              className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-600 dark:placeholder:text-slate-300 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+            />
+          </div>
+          <div>
+            <label htmlFor="contact-message" className="sr-only">
+              Tell me about your project
+            </label>
+            <Textarea
+              id="contact-message"
+              name="message"
+              value={formData.message}
+              onChange={handleInputChange}
+              placeholder="Tell me about your project"
+              required
+              aria-required="true"
+              className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder:text-slate-600 dark:placeholder:text-slate-300 min-h-32 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+            />
+          </div>
+          <Button
             type="submit"
             disabled={isSubmitting || submitStatus === "success"}
-            className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 py-6 text-lg font-medium group disabled:opacity-50"
+            className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 py-6 text-lg font-medium group disabled:opacity-50 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+            aria-describedby={
+              submitStatus === "error" ? "submit-error" : undefined
+            }
           >
             {isSubmitting ? (
               <>
@@ -1519,12 +1615,12 @@ function ContactSection() {
               </>
             ) : submitStatus === "success" ? (
               <>
-                <CheckCircle className="w-5 h-5 mr-2" />
+                <CheckCircle className="w-5 h-5 mr-2" aria-hidden="true" />
                 Message Sent!
               </>
             ) : submitStatus === "error" ? (
               <>
-                <AlertCircle className="w-5 h-5 mr-2" />
+                <AlertCircle className="w-5 h-5 mr-2" aria-hidden="true" />
                 Failed to Send
               </>
             ) : (
@@ -1534,6 +1630,7 @@ function ContactSection() {
                   className="ml-2"
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
+                  aria-hidden="true"
                 >
                   <ArrowUpRight className="w-5 h-5" />
                 </motion.div>
@@ -1541,6 +1638,14 @@ function ContactSection() {
             )}
           </Button>
         </motion.form>
+
+        {/* Status messages for screen readers */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {submitStatus === "success" &&
+            "Your message has been sent successfully!"}
+          {submitStatus === "error" &&
+            "There was an error sending your message. Please try again."}
+        </div>
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -1574,74 +1679,89 @@ function DynamicSEO() {
     "Salah Eddine Boussettah - Developer & Artist"
   );
   const seoMetaDescription = useSetting(
-    "seo_meta_description", 
+    "seo_meta_description",
     "Portfolio of Salah Eddine Boussettah - Software Developer, Game Developer, and Digital Artist"
   );
-  const seoKeywords = useSetting("seo_keywords", ["developer", "portfolio", "web development"]);
+  const seoKeywords = useSetting("seo_keywords", [
+    "developer",
+    "portfolio",
+    "web development",
+  ]);
   const seoOgImage = useSetting("seo_og_image", "");
 
   useEffect(() => {
     // Update document title
     document.title = seoMetaTitle || `${siteName} - ${ownerName}`;
-    
+
     // Update meta description
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.setAttribute('name', 'description');
+      metaDescription = document.createElement("meta");
+      metaDescription.setAttribute("name", "description");
       document.head.appendChild(metaDescription);
     }
-    metaDescription.setAttribute('content', seoMetaDescription);
-    
+    metaDescription.setAttribute("content", seoMetaDescription);
+
     // Update meta keywords
     let metaKeywords = document.querySelector('meta[name="keywords"]');
     if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.setAttribute('name', 'keywords');
+      metaKeywords = document.createElement("meta");
+      metaKeywords.setAttribute("name", "keywords");
       document.head.appendChild(metaKeywords);
     }
-    const keywordsString = Array.isArray(seoKeywords) ? seoKeywords.join(', ') : seoKeywords;
-    metaKeywords.setAttribute('content', keywordsString);
-    
+    const keywordsString = Array.isArray(seoKeywords)
+      ? seoKeywords.join(", ")
+      : seoKeywords;
+    metaKeywords.setAttribute("content", keywordsString);
+
     // Update Open Graph meta tags
     const updateOgMeta = (property: string, content: string) => {
       let ogMeta = document.querySelector(`meta[property="${property}"]`);
       if (!ogMeta) {
-        ogMeta = document.createElement('meta');
-        ogMeta.setAttribute('property', property);
+        ogMeta = document.createElement("meta");
+        ogMeta.setAttribute("property", property);
         document.head.appendChild(ogMeta);
       }
-      ogMeta.setAttribute('content', content);
+      ogMeta.setAttribute("content", content);
     };
-    
-    updateOgMeta('og:title', seoMetaTitle || `${siteName} - ${ownerName}`);
-    updateOgMeta('og:description', seoMetaDescription);
-    updateOgMeta('og:type', 'website');
-    
+
+    updateOgMeta("og:title", seoMetaTitle || `${siteName} - ${ownerName}`);
+    updateOgMeta("og:description", seoMetaDescription);
+    updateOgMeta("og:type", "website");
+
     if (seoOgImage) {
-      updateOgMeta('og:image', seoOgImage);
+      updateOgMeta("og:image", seoOgImage);
     }
-    
+
     // Update Twitter Card meta tags
     const updateTwitterMeta = (name: string, content: string) => {
       let twitterMeta = document.querySelector(`meta[name="${name}"]`);
       if (!twitterMeta) {
-        twitterMeta = document.createElement('meta');
-        twitterMeta.setAttribute('name', name);
+        twitterMeta = document.createElement("meta");
+        twitterMeta.setAttribute("name", name);
         document.head.appendChild(twitterMeta);
       }
-      twitterMeta.setAttribute('content', content);
+      twitterMeta.setAttribute("content", content);
     };
-    
-    updateTwitterMeta('twitter:card', 'summary_large_image');
-    updateTwitterMeta('twitter:title', seoMetaTitle || `${siteName} - ${ownerName}`);
-    updateTwitterMeta('twitter:description', seoMetaDescription);
-    
+
+    updateTwitterMeta("twitter:card", "summary_large_image");
+    updateTwitterMeta(
+      "twitter:title",
+      seoMetaTitle || `${siteName} - ${ownerName}`
+    );
+    updateTwitterMeta("twitter:description", seoMetaDescription);
+
     if (seoOgImage) {
-      updateTwitterMeta('twitter:image', seoOgImage);
+      updateTwitterMeta("twitter:image", seoOgImage);
     }
-    
-  }, [siteName, ownerName, seoMetaTitle, seoMetaDescription, seoKeywords, seoOgImage]);
+  }, [
+    siteName,
+    ownerName,
+    seoMetaTitle,
+    seoMetaDescription,
+    seoKeywords,
+    seoOgImage,
+  ]);
 
   return null; // This component doesn't render anything
 }
@@ -1682,12 +1802,14 @@ export default function SalahEddinePortfolio() {
           <Navigation />
           <ThemeToggle />
 
-          <HeroSection />
-          <AboutSection />
-          <WorkSection />
-          <ProcessSection />
-          <TestimonialsSection />
-          <ContactSection />
+          <main id="main-content">
+            <HeroSection />
+            <AboutSection />
+            <WorkSection />
+            <ProcessSection />
+            <TestimonialsSection />
+            <ContactSection />
+          </main>
         </motion.div>
       )}
     </div>
