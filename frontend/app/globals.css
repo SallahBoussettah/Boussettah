@@ -116,3 +116,14 @@ html {
   clip: auto;
   white-space: normal;
 }
+
+/* Enhanced focus styles for better accessibility */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Ensure high contrast focus indicators */
+.dark *:focus-visible {
+  outline-color: #60a5fa;
+}

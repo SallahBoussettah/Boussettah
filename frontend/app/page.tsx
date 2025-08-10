@@ -460,7 +460,7 @@ function Navigation() {
                 className="ml-4"
               >
                 <motion.button
-                  className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                  className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-all duration-300 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2"
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   aria-label="Access developer login area"
@@ -541,7 +541,7 @@ function Navigation() {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <motion.button
-                    className="w-full bg-black dark:bg-white text-white dark:text-black px-4 py-3 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 text-center min-h-[44px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                    className="w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-3 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-all duration-300 text-center min-h-[44px] focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2"
                     whileTap={{ scale: 0.95 }}
                     aria-label="Access developer login area"
                   >
@@ -620,7 +620,7 @@ function HeroSection() {
           className="flex flex-wrap justify-center gap-4"
         >
           <Link href="/projects">
-            <Button className="group bg-black dark:bg-white text-white dark:text-black px-8 text-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 h-[48px] flex items-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+            <Button className="group bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-8 text-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-all duration-300 h-[48px] min-w-[120px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2">
               View My Work
               <motion.div
                 className="ml-2"
@@ -641,7 +641,7 @@ function HeroSection() {
           >
             <Button
               variant="outline"
-              className="group border-2 border-black dark:border-white text-black dark:text-white px-8 text-lg font-medium hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 h-[48px] flex items-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+              className="group border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 px-8 text-lg font-medium hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-all duration-300 h-[48px] min-w-[120px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2"
             >
               <Github className="w-5 h-5 mr-2" aria-hidden="true" />
               GitHub
@@ -1051,7 +1051,7 @@ function WorkSection() {
           className="text-center mb-20"
         >
           <Link href="/projects">
-            <Button className="group bg-black dark:bg-white text-white dark:text-black px-8 py-3 text-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-300 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+            <Button className="group bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-8 py-3 text-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-all duration-300 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2">
               View All Projects
               <motion.div
                 className="ml-2"
@@ -1162,7 +1162,7 @@ function WorkSection() {
                 {/* Close button */}
                 <button
                   onClick={() => setSelectedArt(null)}
-                  className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 dark:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/40 dark:hover:bg-white/40 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-transparent"
+                  className="absolute top-4 right-4 z-10 w-12 h-12 min-w-[48px] min-h-[48px] bg-black/20 dark:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/40 dark:hover:bg-white/40 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-transparent"
                   aria-label="Close artwork modal"
                 >
                   <svg
@@ -1440,12 +1440,21 @@ function TestimonialsSection() {
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`min-w-[44px] min-h-[44px] p-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 ${
                 index === currentIndex
-                  ? "bg-black dark:bg-white w-8"
-                  : "bg-slate-300 dark:bg-slate-600"
+                  ? "bg-slate-200 dark:bg-slate-700"
+                  : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
-            />
+              aria-label={`Go to testimonial ${index + 1}`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? "bg-black dark:bg-white w-8"
+                    : "bg-slate-400 dark:bg-slate-500"
+                }`}
+              />
+            </button>
           ))}
         </div>
       </div>
@@ -1599,7 +1608,7 @@ function ContactSection() {
           <Button
             type="submit"
             disabled={isSubmitting || submitStatus === "success"}
-            className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 py-6 text-lg font-medium group disabled:opacity-50 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+            className="w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 py-6 text-lg font-medium group disabled:opacity-50 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2"
             aria-describedby={
               submitStatus === "error" ? "submit-error" : undefined
             }
