@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -40,16 +40,7 @@ export const metadata: Metadata = {
   generator: "Next.js",
   applicationName: "SB Portfolio",
   referrer: "origin-when-cross-origin",
-  colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" }
-  ],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+  metadataBase: new URL('https://boussettahsalah.online'),
   verification: {
     google: "_rR1U1PZy2H7wbWxxlM5GMZ1a-l68jcuH4PHaxfdKnA",
   },
@@ -96,6 +87,17 @@ export const metadata: Metadata = {
     canonical: "https://boussettahsalah.online",
   },
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" }
+  ],
+}
 
 export default function RootLayout({
   children,

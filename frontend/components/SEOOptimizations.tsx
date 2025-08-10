@@ -69,7 +69,7 @@ export const portfolioSchema = {
   },
   "url": "https://boussettahsalah.online/projects",
   "dateCreated": "2024",
-  "dateModified": new Date().toISOString(),
+  "dateModified": "2024-12-01",
   "genre": ["Web Development", "Game Development", "Digital Art", "Mobile Development"],
   "keywords": "React, Next.js, Node.js, TypeScript, Game Development, Digital Art, Portfolio",
   "inLanguage": "en",
@@ -104,7 +104,7 @@ export const enhancedWebsiteSchema = {
   "copyrightYear": "2024",
   "inLanguage": "en",
   "dateCreated": "2024",
-  "dateModified": new Date().toISOString(),
+  "dateModified": "2024-12-01",
   "keywords": "Full Stack Developer, React Developer, Next.js, Node.js, Game Developer, Digital Artist, Marrakech, Morocco",
   "potentialAction": {
     "@type": "SearchAction",
