@@ -292,7 +292,7 @@ function LoadingScreen({ onComplete }: { onComplete: () => void }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="text-sm text-slate-600 dark:text-slate-300 font-light tracking-widest"
+            className="text-sm text-slate-800 dark:text-slate-200 font-light tracking-widest"
             aria-live="polite"
             aria-label={`Loading progress: ${progress} percent`}
           >
@@ -1027,10 +1027,10 @@ function WorkSection() {
                   >
                     {project.title}
                   </motion.h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+                  <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
                     {project.tech}
                   </p>
-                  <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400">
+                  <div className="flex justify-between text-sm text-slate-700 dark:text-slate-300">
                     <span className="capitalize">
                       {project.category} Development
                     </span>
@@ -1191,7 +1191,7 @@ function WorkSection() {
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-slate-500 dark:text-slate-400">
+                      <div className="text-center text-slate-700 dark:text-slate-300">
                         <div className="text-6xl mb-4">🎨</div>
                         <p>No image available</p>
                       </div>
@@ -1265,7 +1265,7 @@ function WorkSection() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="flex items-center gap-4 mt-6 text-sm text-slate-500 dark:text-slate-400"
+                    className="flex items-center gap-4 mt-6 text-sm text-slate-700 dark:text-slate-300"
                   >
                     <span>
                       {featuredArt[selectedArt]?.category || "Digital Art"}
@@ -1319,7 +1319,7 @@ function ProcessSection() {
   return (
     <section className="py-32 px-6 bg-slate-50 dark:bg-slate-900">
       <div className="max-w-6xl mx-auto">
-        <AnimatedText className="text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6 text-center">
+        <AnimatedText className="text-sm uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-6 text-center">
           Process
         </AnimatedText>
         <AnimatedText
@@ -1340,7 +1340,7 @@ function ProcessSection() {
               className="text-center"
             >
               <motion.div
-                className="text-6xl font-bold text-slate-200 dark:text-slate-700 mb-6"
+                className="text-6xl font-bold text-slate-300 dark:text-slate-600 mb-6"
                 whileInView={{
                   color: ["#e2e8f0", "#64748b", "#e2e8f0"],
                 }}
@@ -1352,7 +1352,7 @@ function ProcessSection() {
               <h3 className="text-xl font-semibold mb-4 text-black dark:text-white">
                 {step.title}
               </h3>
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-slate-700 dark:text-slate-200 leading-relaxed">
                 {step.description}
               </p>
             </motion.div>
@@ -1398,7 +1398,7 @@ function TestimonialsSection() {
   return (
     <section className="py-32 px-6">
       <div className="max-w-4xl mx-auto text-center">
-        <AnimatedText className="text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6">
+        <AnimatedText className="text-sm uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-6">
           Testimonials
         </AnimatedText>
         <AnimatedText
@@ -1420,14 +1420,14 @@ function TestimonialsSection() {
               transition={{ duration: 0.8, ease: [0.21, 1, 0.81, 1] }}
               className="absolute inset-0 flex flex-col justify-center"
             >
-              <blockquote className="text-2xl md:text-3xl font-light leading-relaxed mb-8 text-slate-700 dark:text-slate-300">
+              <blockquote className="text-2xl md:text-3xl font-light leading-relaxed mb-8 text-slate-800 dark:text-slate-200">
                 "{testimonial.quote}"
               </blockquote>
               <div>
                 <div className="font-semibold text-lg text-black dark:text-white">
                   {testimonial.author}
                 </div>
-                <div className="text-slate-500 dark:text-slate-400">
+                <div className="text-slate-700 dark:text-slate-300">
                   {testimonial.role}
                 </div>
               </div>
@@ -1663,7 +1663,7 @@ function ContactSection() {
           viewport={{ once: true }}
           className="mt-16 pt-16 border-t border-slate-200 dark:border-slate-700"
         >
-          <div className="flex justify-center space-x-8 text-slate-600 dark:text-slate-400">
+          <div className="flex justify-center space-x-8 text-slate-700 dark:text-slate-300">
             <motion.a
               href={`mailto:${contactEmail}`}
               className="flex items-center space-x-2 hover:text-black dark:hover:text-white transition-colors duration-300"
