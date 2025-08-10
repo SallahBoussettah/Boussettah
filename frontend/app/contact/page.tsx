@@ -641,7 +641,7 @@ function ContactInfo() {
   // Get dynamic settings
   const contactEmail = useSetting('contact_email', 'dev@boussettahsalah.online');
   const contactPhone = useSetting('contact_phone', '');
-  const contactLocation = useSetting('contact_location', 'Algeria');
+  const contactLocation = useSetting('contact_location', 'Morocco');
   const socialGithub = useSetting('social_github', 'https://github.com');
   const socialLinkedin = useSetting('social_linkedin', 'https://linkedin.com');
   const socialTwitter = useSetting('social_twitter', 'https://twitter.com');
