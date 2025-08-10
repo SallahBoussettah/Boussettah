@@ -1,28 +1,32 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
-import { ThemeProvider } from '@/components/theme-provider'
-import { AuthProvider } from '@/contexts/AuthContext'
-import { SettingsProvider } from '@/contexts/SettingsContext'
-import ClientOnly from '@/components/ClientOnly'
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
+import ClientOnly from "@/components/ClientOnly";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'SB. - Salah Eddine Boussettah | Developer & Digital Artist',
-  description: 'Software Developer, Game Developer, and Digital Artist. Crafting digital experiences across web development, game development, and digital art.',
-  generator: 'SalahEddine',
-  icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+  title: "SB. - Salah Eddine Boussettah | Developer & Digital Artist",
+  description:
+    "Software Developer, Game Developer, and Digital Artist. Crafting digital experiences across web development, game development, and digital art.",
+  generator: "SalahEddine",
+  verification: {
+    google: "_rR1U1PZy2H7wbWxxlM5GMZ1a-l68jcuH4PHaxfdKnA",
   },
-}
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -35,13 +39,11 @@ export default function RootLayout({
             disableTransitionOnChange={false}
           >
             <SettingsProvider>
-              <AuthProvider>
-                {children}
-              </AuthProvider>
+              <AuthProvider>{children}</AuthProvider>
             </SettingsProvider>
           </ThemeProvider>
         </ClientOnly>
       </body>
     </html>
-  )
+  );
 }
